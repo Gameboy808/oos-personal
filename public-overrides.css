@@ -1,0 +1,42 @@
+/* Public OOS adapter: keep native visibility semantics after the master CSS baseline. */
+[hidden] {
+  display: none !important;
+}
+
+.structured-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 16px 18px 18px;
+}
+
+.structured-form input,
+.structured-form select,
+.structured-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  outline: none;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+
+.structured-form input:focus,
+.structured-form select:focus,
+.structured-form textarea:focus {
+  border-color: rgba(22, 131, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(22, 131, 255, 0.1);
+}
+
+.structured-form button {
+  justify-self: start;
+}
+
+.compact-form {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
