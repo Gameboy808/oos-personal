@@ -1,0 +1,1193 @@
+{
+  "meta": {
+    "schemaVersion": 3,
+    "name": "OOS",
+    "fullName": "OOS Personal Operating System",
+    "owner": "凉皮",
+    "timezone": "Asia/Shanghai",
+    "lastUpdated": "2026-07-28T22:46:04.299Z",
+    "version": 3,
+    "maintenanceMode": "Chat-first / Agent-maintained",
+    "dataIntegrity": "Only user-stated facts are real; missing data remains pending.",
+    "theme": {
+      "accent": "#10b981",
+      "warn": "#c3542f",
+      "ok": "#14865b",
+      "sidebar": "dark",
+      "style": "oos-line-workbench"
+    },
+    "readiness": {
+      "operationalReady": true,
+      "visualReady": true,
+      "firstFlight": "not_started"
+    },
+    "hudBaseline": "oos-unified-v5.1",
+    "taskLifecycle": {
+      "lastRunDate": "2026-07-29",
+      "lastRunAt": "2026-07-28T22:44:51.396Z"
+    }
+  },
+  "onboarding": {
+    "firstFlight": {
+      "status": "not_started",
+      "currentStep": 0,
+      "completedSteps": []
+    }
+  },
+  "visual": {
+    "mode": "reviewed",
+    "status": "approved",
+    "provider": "image-gen",
+    "acceptedDirection": "multi-view-flat-illustration-set",
+    "fingerprint": "liangweiping-track-specific-avatars-v4",
+    "approvedAt": "2026-07-29T21:12:09.889414+08:00",
+    "brief": {},
+    "assets": {
+      "views": {
+        "today": "/assets/visuals/view-today.png",
+        "plan": "/assets/visuals/view-plan.png",
+        "tracks": "/assets/visuals/view-tracks.png",
+        "track": "/assets/visuals/view-track.png",
+        "review": "/assets/visuals/view-review.png"
+      },
+      "tracks": {
+        "自媒体起飞": "/assets/visuals/view-track-media.png",
+        "数字游民攒钱": "/assets/visuals/view-track-money.png",
+        "生活上安排事情": "/assets/visuals/view-track-life.png"
+      }
+    }
+  },
+  "profile": {
+    "useRhythm": [
+      "随时教练 / just-in-time"
+    ],
+    "privacy": {
+      "hideOrSummarize": [
+        "具体收入数字摘要展示",
+        "酒吧内部事务轻量化"
+      ],
+      "neverInclude": [
+        "家人隐私",
+        "账号密码",
+        "具体银行卡信息"
+      ]
+    },
+    "firstWeek": {
+      "actions": [
+        "粗剪并发布第一条视频",
+        "记录当前存款基线",
+        "把进行中的事列进 OOS 并试用暂停键"
+      ],
+      "checkpoint": "一周后看粉丝/结余变化"
+    },
+    "watchTracks": []
+  },
+  "hud": {
+    "enabledModules": [
+      "Today",
+      "Plan",
+      "Tracks"
+    ],
+    "disabledModules": []
+  },
+  "watchTracks": [],
+  "principles": [
+    "Know what matters now",
+    "Keep the next action visible",
+    "Preserve context without overload"
+  ],
+  "tracks": [
+    {
+      "id": "自媒体起飞",
+      "name": "自媒体起飞",
+      "navLabel": "自媒体起飞",
+      "summary": "发布第一条视频并持续涨粉，把摄影/口播能力转成自媒体资产",
+      "detail": "",
+      "archetype": "pipeline",
+      "role": "primary",
+      "cadenceDays": 7,
+      "monitoring": {
+        "enabled": true
+      },
+      "progress": 15,
+      "trackType": "pipeline",
+      "stage": "待剪辑发布",
+      "nextAction": "用剪映粗剪那条 40 分钟口播素材，先出第一版",
+      "nextActionDue": "2026-08-03",
+      "risk": "high",
+      "needsQuestion": "第一条视频发布后，下一条选题是什么？",
+      "metric": "视频号粉丝数",
+      "target": "发布第一条 + 30 天内涨到 1000 粉",
+      "deadline": "",
+      "lastUpdated": "2026-07-29",
+      "views": [
+        {
+          "id": "pipeline",
+          "type": "pipeline-board",
+          "source": "logs.pipeline",
+          "label": "自媒体起飞",
+          "stages": [
+            "选题",
+            "拍摄",
+            "剪辑",
+            "发布",
+            "涨粉"
+          ]
+        }
+      ],
+      "checkpoints": [
+        {
+          "title": "第一条发布后 7 天数据复盘",
+          "status": "planned",
+          "date": "2026-08-17"
+        }
+      ],
+      "pipelineStages": [
+        "选题",
+        "拍摄",
+        "剪辑",
+        "发布",
+        "涨粉"
+      ]
+    },
+    {
+      "id": "数字游民攒钱",
+      "name": "数字游民攒钱",
+      "navLabel": "攒钱进度",
+      "summary": "攒出启动资金，朝一人公司 / 被动收入走",
+      "detail": "",
+      "archetype": "trend",
+      "role": "operational",
+      "cadenceDays": 7,
+      "monitoring": {
+        "enabled": true
+      },
+      "progress": 5,
+      "trackType": "trend",
+      "stage": "记录基线",
+      "nextAction": "记录当前可投资月结余基线（无锡月薪 5500 / 回南宁 3000+）",
+      "nextActionDue": "",
+      "risk": "medium",
+      "needsQuestion": "每月能稳定留出多少进入「启动资金」？",
+      "metric": "月可投资结余",
+      "target": "月结余稳定 ≥ 8000 元",
+      "deadline": "",
+      "lastUpdated": "2026-07-29",
+      "views": [
+        {
+          "type": "trend-line",
+          "source": "logs.metrics",
+          "metric": "savings",
+          "unit": "元",
+          "target": 8000,
+          "id": "trend-line-1",
+          "label": "攒钱进度"
+        }
+      ],
+      "checkpoints": []
+    },
+    {
+      "id": "生活上安排事情",
+      "name": "生活上安排事情",
+      "navLabel": "生活统筹",
+      "summary": "多线并行事务总览，支持一键暂停/恢复，工作生活学习同时推进不丢进度",
+      "detail": "",
+      "archetype": "project",
+      "role": "operational",
+      "cadenceDays": 7,
+      "monitoring": {
+        "enabled": true
+      },
+      "progress": 10,
+      "trackType": "project",
+      "stage": "建立暂停机制",
+      "nextAction": "把当前正在进行的 3 件事列进 OOS，并标记各自进度",
+      "nextActionDue": "",
+      "risk": "high",
+      "needsQuestion": "现在同时进行的事里，哪件是最该先推进的？",
+      "metric": "进行中事项数量（越低越好）",
+      "target": "任何进行中事项可一键暂停并切到紧急项，恢复时不丢进度",
+      "deadline": "",
+      "lastUpdated": "2026-07-29",
+      "views": [
+        {
+          "id": "milestones",
+          "type": "milestone-timeline",
+          "source": "logs.milestones",
+          "label": "生活统筹"
+        }
+      ],
+      "checkpoints": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "自媒体起飞",
+      "name": "自媒体起飞",
+      "navLabel": "自媒体起飞",
+      "progress": 15,
+      "stage": "待剪辑发布",
+      "nextAction": "用剪映粗剪那条 40 分钟口播素材，先出第一版",
+      "lastUpdated": "2026-07-29",
+      "risk": "high",
+      "metric": "视频号粉丝数",
+      "archetype": "pipeline",
+      "trackType": "pipeline"
+    },
+    {
+      "id": "数字游民攒钱",
+      "name": "数字游民攒钱",
+      "navLabel": "攒钱进度",
+      "progress": 5,
+      "stage": "记录基线",
+      "nextAction": "记录当前可投资月结余基线（无锡月薪 5500 / 回南宁 3000+）",
+      "lastUpdated": "2026-07-29",
+      "risk": "medium",
+      "metric": "月可投资结余",
+      "archetype": "trend",
+      "trackType": "trend"
+    },
+    {
+      "id": "生活上安排事情",
+      "name": "生活上安排事情",
+      "navLabel": "生活统筹",
+      "progress": 10,
+      "stage": "建立暂停机制",
+      "nextAction": "把当前正在进行的 3 件事列进 OOS，并标记各自进度",
+      "lastUpdated": "2026-07-29",
+      "risk": "high",
+      "metric": "进行中事项数量（越低越好）",
+      "archetype": "project",
+      "trackType": "project"
+    }
+  ],
+  "tasks": [
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-自媒体起飞-next",
+      "title": "用剪映粗剪那条 40 分钟口播素材，先出第一版",
+      "goal": "自媒体起飞",
+      "nextStep": "用剪映粗剪那条 40 分钟口播素材，先出第一版",
+      "estimatedMinutes": 60,
+      "due": "2026-08-03"
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-自媒体起飞-2",
+      "title": "粗剪第一条口播视频（剪映）",
+      "goal": "自媒体起飞",
+      "nextStep": "粗剪第一条口播视频（剪映）",
+      "estimatedMinutes": 120
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-自媒体起飞-3",
+      "title": "写第一条发布文案 + 标题",
+      "goal": "自媒体起飞",
+      "nextStep": "写第一条发布文案 + 标题",
+      "estimatedMinutes": 30
+    },
+    {
+      "status": "open",
+      "priority": "normal",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-数字游民攒钱-next",
+      "title": "记录当前可投资月结余基线（无锡月薪 5500 / 回南宁 3000+）",
+      "goal": "数字游民攒钱",
+      "nextStep": "记录当前可投资月结余基线（无锡月薪 5500 / 回南宁 3000+）",
+      "estimatedMinutes": 60
+    },
+    {
+      "status": "open",
+      "priority": "normal",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-数字游民攒钱-2",
+      "title": "盘点本月收支，记一个结余基线数字",
+      "goal": "数字游民攒钱",
+      "nextStep": "盘点本月收支，记一个结余基线数字",
+      "estimatedMinutes": 45
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-生活上安排事情-next",
+      "title": "把当前正在进行的 3 件事列进 OOS，并标记各自进度",
+      "goal": "生活上安排事情",
+      "nextStep": "把当前正在进行的 3 件事列进 OOS，并标记各自进度",
+      "estimatedMinutes": 60
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-生活上安排事情-2",
+      "title": "列出当前进行中的事并设进度",
+      "goal": "生活上安排事情",
+      "nextStep": "列出当前进行中的事并设进度",
+      "estimatedMinutes": 30
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-生活上安排事情-3",
+      "title": "试用暂停键：把一件进行中的事暂停去处理紧急项",
+      "goal": "生活上安排事情",
+      "nextStep": "试用暂停键：把一件进行中的事暂停去处理紧急项",
+      "estimatedMinutes": 15
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.395Z",
+      "updatedAt": "2026-07-28T22:44:51.395Z",
+      "id": "task-自媒体起飞-week-1",
+      "title": "粗剪并发布第一条视频",
+      "goal": "自媒体起飞",
+      "nextStep": "粗剪并发布第一条视频",
+      "estimatedMinutes": 60
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.396Z",
+      "updatedAt": "2026-07-28T22:44:51.396Z",
+      "id": "task-自媒体起飞-week-2",
+      "title": "记录当前存款基线",
+      "goal": "自媒体起飞",
+      "nextStep": "记录当前存款基线",
+      "estimatedMinutes": 60
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-28T22:44:51.396Z",
+      "updatedAt": "2026-07-28T22:44:51.396Z",
+      "id": "task-自媒体起飞-week-3",
+      "title": "把进行中的事列进 OOS 并试用暂停键",
+      "goal": "自媒体起飞",
+      "nextStep": "把进行中的事列进 OOS 并试用暂停键",
+      "estimatedMinutes": 60
+    }
+  ],
+  "scheduleBlocks": [
+    {
+      "id": "block-auto-task-自媒体起飞-next-20260730-540",
+      "taskId": "task-自媒体起飞-next",
+      "title": "用剪映粗剪那条 40 分钟口播素材，先出第一版",
+      "goal": "自媒体起飞",
+      "kind": "focus",
+      "startAt": "2026-07-30T09:00:00+08:00",
+      "endAt": "2026-07-30T10:00:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "用剪映粗剪那条 40 分钟口播素材，先出第一版"
+    },
+    {
+      "id": "block-auto-task-自媒体起飞-2-20260729-540",
+      "taskId": "task-自媒体起飞-2",
+      "title": "粗剪第一条口播视频（剪映）",
+      "goal": "自媒体起飞",
+      "kind": "focus",
+      "startAt": "2026-07-29T09:00:00+08:00",
+      "endAt": "2026-07-29T11:00:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "粗剪第一条口播视频（剪映）"
+    },
+    {
+      "id": "block-auto-task-自媒体起飞-3-20260729-660",
+      "taskId": "task-自媒体起飞-3",
+      "title": "写第一条发布文案 + 标题",
+      "goal": "自媒体起飞",
+      "kind": "focus",
+      "startAt": "2026-07-29T11:00:00+08:00",
+      "endAt": "2026-07-29T11:30:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "写第一条发布文案 + 标题"
+    },
+    {
+      "id": "block-auto-task-数字游民攒钱-next-20260729-690",
+      "taskId": "task-数字游民攒钱-next",
+      "title": "记录当前可投资月结余基线（无锡月薪 5500 / 回南宁 3000+）",
+      "goal": "数字游民攒钱",
+      "kind": "focus",
+      "startAt": "2026-07-29T11:30:00+08:00",
+      "endAt": "2026-07-29T12:30:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "记录当前可投资月结余基线（无锡月薪 5500 / 回南宁 3000+）"
+    },
+    {
+      "id": "block-auto-task-数字游民攒钱-2-20260729-750",
+      "taskId": "task-数字游民攒钱-2",
+      "title": "盘点本月收支，记一个结余基线数字",
+      "goal": "数字游民攒钱",
+      "kind": "focus",
+      "startAt": "2026-07-29T12:30:00+08:00",
+      "endAt": "2026-07-29T13:15:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "盘点本月收支，记一个结余基线数字"
+    },
+    {
+      "id": "block-auto-task-生活上安排事情-next-20260729-795",
+      "taskId": "task-生活上安排事情-next",
+      "title": "把当前正在进行的 3 件事列进 OOS，并标记各自进度",
+      "goal": "生活上安排事情",
+      "kind": "focus",
+      "startAt": "2026-07-29T13:15:00+08:00",
+      "endAt": "2026-07-29T14:15:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "把当前正在进行的 3 件事列进 OOS，并标记各自进度"
+    },
+    {
+      "id": "block-auto-task-生活上安排事情-2-20260729-855",
+      "taskId": "task-生活上安排事情-2",
+      "title": "列出当前进行中的事并设进度",
+      "goal": "生活上安排事情",
+      "kind": "focus",
+      "startAt": "2026-07-29T14:15:00+08:00",
+      "endAt": "2026-07-29T14:45:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "列出当前进行中的事并设进度"
+    },
+    {
+      "id": "block-auto-task-生活上安排事情-3-20260729-885",
+      "taskId": "task-生活上安排事情-3",
+      "title": "试用暂停键：把一件进行中的事暂停去处理紧急项",
+      "goal": "生活上安排事情",
+      "kind": "focus",
+      "startAt": "2026-07-29T14:45:00+08:00",
+      "endAt": "2026-07-29T15:00:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "试用暂停键：把一件进行中的事暂停去处理紧急项"
+    },
+    {
+      "id": "block-auto-task-自媒体起飞-week-1-20260729-900",
+      "taskId": "task-自媒体起飞-week-1",
+      "title": "粗剪并发布第一条视频",
+      "goal": "自媒体起飞",
+      "kind": "focus",
+      "startAt": "2026-07-29T15:00:00+08:00",
+      "endAt": "2026-07-29T16:00:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "粗剪并发布第一条视频"
+    },
+    {
+      "id": "block-auto-task-自媒体起飞-week-2-20260729-960",
+      "taskId": "task-自媒体起飞-week-2",
+      "title": "记录当前存款基线",
+      "goal": "自媒体起飞",
+      "kind": "focus",
+      "startAt": "2026-07-29T16:00:00+08:00",
+      "endAt": "2026-07-29T17:00:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "记录当前存款基线"
+    },
+    {
+      "id": "block-auto-task-自媒体起飞-week-3-20260729-1020",
+      "taskId": "task-自媒体起飞-week-3",
+      "title": "把进行中的事列进 OOS 并试用暂停键",
+      "goal": "自媒体起飞",
+      "kind": "focus",
+      "startAt": "2026-07-29T17:00:00+08:00",
+      "endAt": "2026-07-29T18:00:00+08:00",
+      "status": "planned",
+      "source": "worker",
+      "locked": false,
+      "note": "把进行中的事列进 OOS 并试用暂停键"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "local-state",
+      "name": "OOS local state",
+      "kind": "local",
+      "status": "available",
+      "scopes": [
+        "read",
+        "write-low-risk"
+      ],
+      "approvalPolicy": "automatic-low-risk"
+    },
+    {
+      "id": "agent-runtime",
+      "name": "Compatible agent runtime",
+      "kind": "runtime",
+      "status": "manual",
+      "scopes": [
+        "delegate",
+        "automate"
+      ],
+      "approvalPolicy": "conversation-owned"
+    },
+    {
+      "id": "state-cli",
+      "name": "OOS State CLI",
+      "kind": "local",
+      "status": "available",
+      "scopes": [
+        "read",
+        "write-versioned",
+        "worker-review"
+      ],
+      "approvalPolicy": "automatic-low-risk"
+    }
+  ],
+  "approvals": [],
+  "delegations": [],
+  "receipts": [
+    {
+      "id": "receipt-1785278764290-b2764479",
+      "clientMutationId": "system-task-lifecycle-2026-07-29",
+      "source": "worker",
+      "summary": "Daily task lifecycle maintenance.",
+      "humanMeaning": "Daily task lifecycle maintenance.",
+      "followUp": {
+        "needed": false,
+        "reason": null,
+        "suggestedAction": null
+      },
+      "status": "committed",
+      "versionBefore": 2,
+      "versionAfter": 3,
+      "operation": "state.update",
+      "taskId": null,
+      "changedEntities": [],
+      "createdAt": "2026-07-28T22:46:04.291Z",
+      "committedAt": "2026-07-28T22:46:04.300Z",
+      "applied": [
+        {
+          "type": "activity.add",
+          "targetId": null
+        }
+      ]
+    },
+    {
+      "id": "receipt-1785278691391-d4af3065",
+      "clientMutationId": "system-initial-task-seed-v1",
+      "source": "system",
+      "summary": "Create the first canonical actions and schedule them.",
+      "humanMeaning": "Created task \"用剪映粗剪那条 40 分钟口播素材，先出第一版\" as canonical work.",
+      "followUp": {
+        "needed": false,
+        "reason": null,
+        "suggestedAction": null
+      },
+      "status": "committed",
+      "versionBefore": 1,
+      "versionAfter": 2,
+      "operation": "task.create",
+      "taskId": "task-自媒体起飞-next",
+      "changedEntities": [
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-数字游民攒钱-2-20260729-750",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-数字游民攒钱-next-20260729-690",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-生活上安排事情-2-20260729-855",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-生活上安排事情-3-20260729-885",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-生活上安排事情-next-20260729-795",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-自媒体起飞-2-20260729-540",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-自媒体起飞-3-20260729-660",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-自媒体起飞-next-20260730-540",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-自媒体起飞-week-1-20260729-900",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-自媒体起飞-week-2-20260729-960",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "scheduleBlock",
+          "id": "block-auto-task-自媒体起飞-week-3-20260729-1020",
+          "change": "created",
+          "changedFields": [
+            "endAt",
+            "goal",
+            "id",
+            "kind",
+            "locked",
+            "note",
+            "source",
+            "startAt",
+            "status",
+            "taskId",
+            "title"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-数字游民攒钱-2",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-数字游民攒钱-next",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-生活上安排事情-2",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-生活上安排事情-3",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-生活上安排事情-next",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-自媒体起飞-2",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-自媒体起飞-3",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-自媒体起飞-next",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "due",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-自媒体起飞-week-1",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-自媒体起飞-week-2",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        },
+        {
+          "type": "task",
+          "id": "task-自媒体起飞-week-3",
+          "change": "created",
+          "changedFields": [
+            "createdAt",
+            "estimatedMinutes",
+            "goal",
+            "id",
+            "nextStep",
+            "priority",
+            "status",
+            "title",
+            "updatedAt"
+          ]
+        }
+      ],
+      "createdAt": "2026-07-28T22:44:51.391Z",
+      "committedAt": "2026-07-28T22:44:51.397Z",
+      "applied": [
+        {
+          "type": "task.create",
+          "targetId": "task-自媒体起飞-next"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-自媒体起飞-2"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-自媒体起飞-3"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-数字游民攒钱-next"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-数字游民攒钱-2"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-生活上安排事情-next"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-生活上安排事情-2"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-生活上安排事情-3"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-自媒体起飞-week-1"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-自媒体起飞-week-2"
+        },
+        {
+          "type": "task.create",
+          "targetId": "task-自媒体起飞-week-3"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-自媒体起飞-next-20260730-540"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-自媒体起飞-2-20260729-540"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-自媒体起飞-3-20260729-660"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-数字游民攒钱-next-20260729-690"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-数字游民攒钱-2-20260729-750"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-生活上安排事情-next-20260729-795"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-生活上安排事情-2-20260729-855"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-生活上安排事情-3-20260729-885"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-自媒体起飞-week-1-20260729-900"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-自媒体起飞-week-2-20260729-960"
+        },
+        {
+          "type": "schedule.create",
+          "targetId": "block-auto-task-自媒体起飞-week-3-20260729-1020"
+        },
+        {
+          "type": "activity.add",
+          "targetId": null
+        },
+        {
+          "type": "task.lifecycle.maintain",
+          "targetId": null
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-自媒体起飞-risk",
+      "text": "第一条视频发布后，下一条选题是什么？",
+      "goal": "自媒体起飞",
+      "date": "2026-07-29",
+      "resolved": false
+    },
+    {
+      "id": "q-数字游民攒钱-risk",
+      "text": "每月能稳定留出多少进入「启动资金」？",
+      "goal": "数字游民攒钱",
+      "date": "2026-07-29",
+      "resolved": false
+    },
+    {
+      "id": "q-生活上安排事情-risk",
+      "text": "现在同时进行的事里，哪件是最该先推进的？",
+      "goal": "生活上安排事情",
+      "date": "2026-07-29",
+      "resolved": false
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-oos-start",
+      "date": "2026-07-29",
+      "title": "OOS starts from chat",
+      "summary": "Speak naturally; your compatible agent can maintain the system.",
+      "body": "The HUD projects current focus while chat remains the primary interface.",
+      "tags": [
+        "system"
+      ],
+      "relatedGoals": [
+        "system"
+      ],
+      "links": []
+    }
+  ],
+  "activity": [
+    {
+      "id": "activity-1785278764299",
+      "date": "2026-07-28T22:46:04.299Z",
+      "text": "[worker] Daily task lifecycle maintenance.",
+      "relatedGoal": "system"
+    },
+    {
+      "id": "activity-1785278691396",
+      "date": "2026-07-28T22:44:51.396Z",
+      "text": "[system] Create the first canonical actions and schedule them.",
+      "relatedGoal": "system"
+    },
+    {
+      "id": "activity-initialized",
+      "date": "2026-07-29",
+      "text": "OOS 已根据确认后的个人计划完成初始化。",
+      "relatedGoal": "system"
+    }
+  ],
+  "logs": {
+    "daily": [],
+    "checkins": [],
+    "milestones": [
+      {
+        "id": "milestone-自媒体起飞-1",
+        "goal": "自媒体起飞",
+        "trackId": "自媒体起飞",
+        "title": "发布第一条视频",
+        "date": "2026-08-10",
+        "status": "planned",
+        "summary": ""
+      },
+      {
+        "id": "milestone-生活上安排事情-1",
+        "goal": "生活上安排事情",
+        "trackId": "生活上安排事情",
+        "title": "建立暂停/恢复工作流",
+        "date": "2026-08-02",
+        "status": "planned",
+        "summary": ""
+      }
+    ],
+    "pipeline": [],
+    "habits": [],
+    "learning": [],
+    "metrics": [],
+    "executions": []
+  },
+  "context": {
+    "memories": []
+  },
+  "decisions": [],
+  "relationship": {
+    "enabled": false,
+    "partnerLabel": "Partner",
+    "scale": "0-5",
+    "entries": [],
+    "openRepairs": []
+  },
+  "inbox": []
+}
