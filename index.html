@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#10b981" />
 <title>OOS · 凉皮的个人操作系统</title>
 <link rel="manifest" href="manifest.json" />
-<link rel="icon" href="./assets/visuals/avatar-cover.png" />
+<link rel="icon" href="./assets/visuals/avatar-cover.webp" />
 <style>
   :root{
     --accent:#10b981;
@@ -92,7 +92,7 @@
 <body>
   <div class="wrap">
     <header class="hero">
-      <img class="avatar" id="avatar" src="./assets/visuals/avatar-cover.png" alt="凉皮" />
+      <img class="avatar" id="avatar" src="./assets/visuals/avatar-cover.webp" alt="凉皮" />
       <div>
         <h1>OOS · <span class="g">凉皮的个人操作系统</span></h1>
         <p id="subtitle">Personal Operating System — 随时教练 / just-in-time</p>
@@ -134,7 +134,7 @@ function render(d){
   const assetViews = (d.visual && d.visual.assets && d.visual.assets.views) || {};
   const tasks = (d.tasks || []).filter(t => t.status === "open").slice(0,6);
 
-  document.getElementById("avatar").src = fix(assetViews.today) || "./assets/visuals/avatar-cover.png";
+  document.getElementById("avatar").src = fix(assetViews.today) || "./assets/visuals/avatar-cover.webp";
   document.getElementById("subtitle").textContent = "Personal Operating System — " + ((d.profile && d.profile.useRhythm && d.profile.useRhythm[0]) || "随时教练");
 
   let html = "";
@@ -142,7 +142,7 @@ function render(d){
   // Tracks
   html += '<h2 class="section">三条轨道 · 专属人物</h2><div class="grid">';
   tracks.forEach(t=>{
-    const img = fix(assetTracks[t.name]) || fix(assetViews.track) || "./assets/visuals/view-track.png";
+    const img = fix(assetTracks[t.name]) || fix(assetViews.track) || "./assets/visuals/view-track.webp";
     const prog = Math.max(0, Math.min(100, Number(t.progress)||0));
     html += `
       <div class="card">
