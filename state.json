@@ -44,16 +44,16 @@
     "brief": {},
     "assets": {
       "views": {
-        "today": "/assets/visuals/view-today.webp",
-        "plan": "/assets/visuals/view-plan.webp",
-        "tracks": "/assets/visuals/view-tracks.webp",
-        "track": "/assets/visuals/view-track.webp",
-        "review": "/assets/visuals/view-review.webp"
+        "today": "./assets/visuals/view-today.webp",
+        "plan": "./assets/visuals/view-plan.webp",
+        "tracks": "./assets/visuals/view-tracks.webp",
+        "track": "./assets/visuals/view-track.webp",
+        "review": "./assets/visuals/view-review.webp"
       },
       "tracks": {
-        "自媒体起飞": "/assets/visuals/view-track-media.webp",
-        "数字游民攒钱": "/assets/visuals/view-track-money.webp",
-        "生活上安排事情": "/assets/visuals/view-track-life.webp"
+        "自媒体起飞": "./assets/visuals/view-track-media.webp",
+        "数字游民攒钱": "./assets/visuals/view-track-money.webp",
+        "生活上安排事情": "./assets/visuals/view-track-life.webp"
       }
     }
   },
