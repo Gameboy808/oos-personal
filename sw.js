@@ -1,50 +1,64 @@
-const CACHE = "oos-public-v1";
-const PRECACHE = [
+/*
+ * OOS 公网版 Service Worker
+ * - 导航请求走 network-first（保证每次拿到最新页面）
+ * - 静态资源走 cache-first（离线也能开）
+ * - CACHE_VERSION 变动即强制刷新缓存
+ */
+const CACHE_VERSION = "oos-white-v1";
+const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./state.json",
-  "./manifest.json",
-  "./sw.js",
-  "./assets/visuals/avatar-cover.png",
-  "./assets/visuals/view-today.png",
-  "./assets/visuals/view-plan.png",
-  "./assets/visuals/view-tracks.png",
-  "./assets/visuals/view-track-media.png",
-  "./assets/visuals/view-track-money.png",
-  "./assets/visuals/view-track-life.png",
-  "./assets/visuals/view-review.png"
+  "./static-shim.js",
+  "./styles.css",
+  "./calendar.css",
+  "./public-overrides.css",
+  "./app.js",
+  "./calendar-engine.js",
+  "./calendar-ui.js",
+  "./oos-client.js",
+  "./favicon.svg",
+  "./manifest.json"
 ];
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_VERSION).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => {})
   );
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
-    caches.keys()
-      .then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
+    )
   );
+  self.clients.claim();
 });
 
-self.addEventListener("fetch", (e) => {
-  const url = new URL(e.request.url);
-  if (url.pathname.endsWith("state.json")) {
-    // network-first for live data, fall back to cache
-    e.respondWith(
-      fetch(e.request)
-        .then((r) => {
-          const copy = r.clone();
-          caches.open(CACHE).then((c) => c.put("./state.json", copy));
-          return r;
-        })
-        .catch(() => caches.match("./state.json"))
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req).catch(() => caches.match("./index.html").then((r) => r || caches.match("./")))
     );
-  } else {
-    e.respondWith(
-      caches.match(e.request).then((r) => r || fetch(e.request))
-    );
+    return;
   }
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((resp) => {
+        if (resp.ok && url.origin === self.location.origin) {
+          const copy = resp.clone();
+          caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
+        }
+        return resp;
+      }).catch(() => cached);
+    })
+  );
 });
