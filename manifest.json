@@ -1,18 +1,18 @@
 {
   "name": "OOS · 凉皮的个人操作系统",
   "short_name": "OOS",
-  "description": "凉皮的个人执行操作系统（公网展示版）",
-  "start_url": "./",
+  "description": "凉皮的个人操作系统（公网版）— 三个轨道专属人物，随时看清下一步",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0b0f0d",
-  "theme_color": "#10b981",
+  "background_color": "#f6f7f4",
+  "theme_color": "#f6f7f4",
+  "lang": "zh-CN",
   "icons": [
     {
-      "src": "./assets/visuals/avatar-cover.png",
+      "src": "./favicon.svg",
       "sizes": "any",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
