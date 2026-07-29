@@ -1,0 +1,19 @@
+{
+  "name": "OOS · 凉皮的个人操作系统",
+  "short_name": "OOS",
+  "description": "凉皮的个人执行操作系统（公网展示版）",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f0d",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "./assets/visuals/avatar-cover.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
