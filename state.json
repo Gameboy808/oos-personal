@@ -383,6 +383,30 @@
       "goal": "自媒体起飞",
       "nextStep": "把进行中的事列进 OOS 并试用暂停键",
       "estimatedMinutes": 60
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-30T09:03:03.992Z",
+      "updatedAt": "2026-07-30T09:03:03.992Z",
+      "id": "task-自媒体起飞-4",
+      "title": "把产品图拍的菜品选择好，批好发给设计师",
+      "goal": "自媒体起飞",
+      "nextStep": "从已拍菜品图里筛出可用主图，按批次整理后发给设计师",
+      "estimatedMinutes": 45,
+      "due": "2026-07-31"
+    },
+    {
+      "status": "open",
+      "priority": "high",
+      "createdAt": "2026-07-30T09:03:03.992Z",
+      "updatedAt": "2026-07-30T09:03:03.992Z",
+      "id": "task-自媒体起飞-5",
+      "title": "出一组九宫格照片，并发送小红书",
+      "goal": "自媒体起飞",
+      "nextStep": "拍/选 9 张成组图，排版九宫格并发布到小红书",
+      "estimatedMinutes": 60,
+      "due": "2026-07-31"
     }
   ],
   "scheduleBlocks": [
