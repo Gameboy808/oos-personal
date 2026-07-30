@@ -127,7 +127,8 @@ function taskTimingLabel(task) {
 }
 
 function taskCard(task, compact = false) {
-  return `<article class="task-card ${task.priority === "high" ? "priority-high" : ""}"><label class="task-check"><input type="checkbox" data-task="${esc(task.id)}"><span></span></label><div><div class="task-title"><strong>${esc(shortText(task.title, compact ? 54 : 86))}</strong>${task.priority === "high" ? badge("HIGH", "warn") : ""}</div><p>${esc(shortText(task.nextStep || "下一步待补充。", compact ? 66 : 110))}</p><small>${esc(trackName(task.goal))} · ${esc(taskTimingLabel(task))}</small></div></article>`;
+  const done = task.status === "done" || task.status === "completed";
+  return `<article class="task-card ${task.priority === "high" ? "priority-high" : ""} ${done ? "is-done" : ""}"><label class="task-check"><input type="checkbox" data-task="${esc(task.id)}" ${done ? "checked" : ""}><span></span></label><div><div class="task-title"><strong>${esc(shortText(task.title, compact ? 54 : 86))}</strong>${task.priority === "high" ? badge("HIGH", "warn") : ""}</div><p>${esc(shortText(task.nextStep || "下一步待补充。", compact ? 66 : 110))}</p><small>${esc(trackName(task.goal))} · ${esc(taskTimingLabel(task))}</small></div></article>`;
 }
 
 function blockStart(block) { const value = Date.parse(block?.startAt || ""); return Number.isFinite(value) ? value : null; }
