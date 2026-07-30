@@ -39,19 +39,28 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
   }
 
-  // 以 base 为骨架，用本地保存的 task / 时间块 完成状态覆盖，保留用户在 HUD 上的操作
+  // 以 base 为骨架，用本地保存的用户操作覆盖。
+  // 关键增强：用户自建的 tasks / tracks / goals 优先（local 在前，base 增补 local 没有的项），
+  // 这样新建的任务/轨道刷新不丢，且重新部署 state.json（base 更新）时不会冲掉用户数据。
   function mergeState(base, local) {
     if (!local) return base;
     var b = JSON.parse(JSON.stringify(base));
-    if (Array.isArray(b.tasks) && Array.isArray(local.tasks)) {
-      var tmap = {};
-      local.tasks.forEach(function (t) { if (t && t.id) tmap[t.id] = t.status; });
-      b.tasks.forEach(function (t) { if (tmap[t.id] != null) t.status = tmap[t.id]; });
+    ["tasks", "tracks", "goals", "scheduleBlocks", "notes"].forEach(function (key) {
+      if (Array.isArray(local[key]) && local[key].length) {
+        var baseOnly = (b[key] || []).filter(function (x) { return !local[key].some(function (lx) { return lx && lx.id === x.id; }); });
+        b[key] = local[key].concat(baseOnly);
+      }
+    });
+    // 兼容旧的「仅状态覆盖」格式（taskStatus / blockStatus 映射）
+    if (local.taskStatus && Array.isArray(b.tasks)) {
+      Object.keys(local.taskStatus).forEach(function (id) {
+        var t = findTask(b, id); if (t) t.status = local.taskStatus[id];
+      });
     }
-    if (Array.isArray(b.scheduleBlocks) && Array.isArray(local.scheduleBlocks)) {
-      var bmap = {};
-      local.scheduleBlocks.forEach(function (x) { if (x && x.id) bmap[x.id] = x.status; });
-      b.scheduleBlocks.forEach(function (x) { if (bmap[x.id] != null) x.status = bmap[x.id]; });
+    if (local.blockStatus && Array.isArray(b.scheduleBlocks)) {
+      Object.keys(local.blockStatus).forEach(function (id) {
+        var x = findBlock(b, id); if (x) x.status = local.blockStatus[id];
+      });
     }
     if (local.onboarding && local.onboarding.firstFlight) {
       b.onboarding = b.onboarding || {};
@@ -104,6 +113,18 @@
           break;
         case "schedule.clearTime":
           { var cb = findBlock(state, id); if (cb) { cb.startAt = null; cb.endAt = null; } }
+          break;
+        case "task.create":
+          if (op.task) { state.tasks = state.tasks || []; state.tasks.unshift(op.task); }
+          break;
+        case "track.create":
+          if (op.track) {
+            state.tracks = state.tracks || []; state.tracks.unshift(op.track);
+            state.goals = state.goals || [];
+            if (!state.goals.some(function (g) { return g.id === op.track.id; })) {
+              state.goals.push({ id: op.track.id, name: op.track.name, navLabel: op.track.name, progress: 0, stage: "", nextAction: "", lastUpdated: new Date().toISOString().slice(0, 10), risk: "low", metric: "", archetype: "project", trackType: "project" });
+            }
+          }
           break;
         case "onboarding.advance":
           if (op.step != null) { state.onboarding = state.onboarding || {}; state.onboarding.firstFlight = state.onboarding.firstFlight || {}; state.onboarding.firstFlight.currentStep = op.step; }
