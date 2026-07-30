@@ -10,6 +10,41 @@
     <link rel="stylesheet" href="./calendar.css?v=1.0.0" />
     <link rel="stylesheet" href="./public-overrides.css?v=6.0.0-runtime" />
     <link rel="manifest" href="./manifest.json" />
+    <style>
+      /* 右下角「更新 / 同步」浮标，参照 Focus App 的同步按钮 */
+      #syncFab {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 60;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 18px;
+        border: none;
+        border-radius: 999px;
+        background: #10b981;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+        cursor: pointer;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #syncFab:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.45); }
+      #syncFab:active { transform: scale(0.96); }
+      #syncFab .sync-icon { font-size: 16px; line-height: 1; }
+      #syncFab.spinning .sync-icon { animation: oos-spin 0.8s linear infinite; }
+      @keyframes oos-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+      /* 任务完成后整卡淡出提示 */
+      .task-card.is-done .task-title strong { text-decoration: line-through; opacity: 0.6; }
+      @media (max-width: 640px) {
+        #syncFab { right: 14px; bottom: 14px; padding: 11px 15px; }
+        #syncFab .sync-label { display: none; }
+      }
+    </style>
   </head>
   <body>
     <div class="app-shell">
@@ -47,11 +82,12 @@
     </div>
     <div id="overlayRoot"></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="./static-shim.js?v=1"></script>
+  <script src="./static-shim.js?v=2"></script>
   <script src="./calendar-engine.js?v=1.0.0"></script>
   <script src="./calendar-ui.js?v=1.0.0"></script>
     <script src="./oos-client.js?v=5.0.0"></script>
-    <script src="./app.js?v=7.0.0-v5"></script>
+    <script src="./app.js?v=7.0.0-v6"></script>
+    <script src="./oos-enhance.js?v=1"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
