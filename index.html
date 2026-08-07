@@ -89,11 +89,29 @@
     <script src="./app.js?v=7.0.0-v6"></script>
     <script src="./oos-enhance.js?v=2"></script>
     <script src="./oos-modules.js?v=1"></script>
-    <script src="./oos-sync.js?v=4"></script>
+    <script src="./oos-sync.js?v=5"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js").catch(function () {});
+        navigator.serviceWorker.register("./sw.js").then(function (reg) {
+          if (reg && reg.waiting && navigator.serviceWorker.controller) {
+            reg.waiting.postMessage("skipWaiting");
+          }
+          if (reg) {
+            reg.addEventListener("updatefound", function () {
+              var nw = reg.installing;
+              if (!nw) return;
+              nw.addEventListener("statechange", function () {
+                if (nw.state === "installed" && navigator.serviceWorker.controller) {
+                  window.location.reload();
+                }
+              });
+            });
+          }
+        }).catch(function () {});
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          window.location.reload();
+        });
       });
     }
   </script>
