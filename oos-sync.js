@@ -216,8 +216,7 @@
   }
 
   /* ---------- 设置面板 ---------- */
-  var STYLE = "#syncGearFloat{position:fixed;right:22px;bottom:80px;z-index:60;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border:none;border-radius:999px;background:#1f2430;color:#fff;font-size:13px;font-weight:600;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s}#syncGearFloat:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.35)}#syncGearFloat svg{width:16px;height:16px;fill:currentColor}" +
-    "@media (max-width:640px){#syncGearFloat{right:14px;bottom:72px;padding:9px 12px;font-size:12px}}" +
+  var STYLE = "#syncGearFloat{position:fixed;top:14px;right:14px;z-index:70;display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border:none;border-radius:999px;background:#1f2430;color:#fff;font-size:12px;font-weight:600;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s}#syncGearFloat:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.35)}#syncGearFloat svg{width:15px;height:15px;fill:currentColor}" +
     ".oos-sync-modal h3{margin:0 0 14px;font-size:18px}.oos-sync-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}" +
     ".oos-sync-row label{font-size:13px;opacity:.7}.oos-sync-token{width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.14);border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:14px}" +
     ".oos-sync-actions{display:flex;gap:10px;margin-top:6px}.oos-sync-actions button{flex:1;padding:11px;border-radius:11px;font-weight:600;cursor:pointer;border:none;font-size:13px}" +
