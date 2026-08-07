@@ -217,6 +217,9 @@
 
   /* ---------- 设置面板 ---------- */
   var STYLE = "#syncGearFloat{position:fixed;top:14px;right:14px;z-index:70;display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border:none;border-radius:999px;background:#1f2430;color:#fff;font-size:12px;font-weight:600;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s}#syncGearFloat:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.35)}#syncGearFloat svg{width:15px;height:15px;fill:currentColor}" +
+    ".gear-in-foot{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:rgba(255,255,255,.06);color:#e8e6e1;cursor:pointer;font-size:10px;font-family:inherit;font-weight:700;transition:background .2s,border-color .2s}.gear-in-foot:hover{background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.5);color:#fff}.gear-in-foot svg{width:13px;height:13px;fill:currentColor}" +
+    "@media (min-width:901px){#syncGearFloat{display:none!important}}" +
+    "@media (max-width:900px){.gear-in-foot{display:none!important}}" +
     ".oos-sync-modal h3{margin:0 0 14px;font-size:18px}.oos-sync-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}" +
     ".oos-sync-row label{font-size:13px;opacity:.7}.oos-sync-token{width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.14);border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:14px}" +
     ".oos-sync-actions{display:flex;gap:10px;margin-top:6px}.oos-sync-actions button{flex:1;padding:11px;border-radius:11px;font-weight:600;cursor:pointer;border:none;font-size:13px}" +
@@ -282,7 +285,15 @@
     g.id = "syncGearFloat"; g.type = "button"; g.title = "云端同步设置";
     g.innerHTML = GEAR_SVG + '<span>' + label + '</span>';
     g.addEventListener("click", openSettings);
-    document.body.appendChild(g);
+    // 电脑端：左侧深色底栏可见 → 放进去（白字配深色背景）
+    var foot = document.querySelector(".launcher-foot");
+    if (foot && foot.offsetParent !== null) {
+      g.className = "gear-in-foot";
+      foot.appendChild(g);
+    } else {
+      // 手机端：左侧栏折叠 → 固定在右上角
+      document.body.appendChild(g);
+    }
   }
 
   /* ---------- 暴露给 FAB ---------- */
