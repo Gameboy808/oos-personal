@@ -13,11 +13,16 @@
     btn.id = "syncFab";
     btn.type = "button";
     btn.setAttribute("aria-label", "同步最新状态");
-    btn.innerHTML = '<span class="sync-icon" aria-hidden="true">⟳</span><span class="sync-label">更新</span>';
+    btn.innerHTML = '<span class="sync-icon" aria-hidden="true">⟳</span><span class="sync-label">同步</span>';
     document.body.appendChild(btn);
 
     btn.addEventListener("click", function () {
       if (btn.classList.contains("spinning")) return;
+      // 若云端同步模块已就绪，走真正的双向云端同步；否则退回本地重载
+      if (window.OOS_SYNC && typeof window.OOS_SYNC.syncNow === "function") {
+        window.OOS_SYNC.syncNow();
+        return;
+      }
       btn.classList.add("spinning");
       if (typeof toast === "function") toast("正在同步最新状态…");
       // 优先用 shim 暴露的强制重载（拉取 GitHub 最新 state.json 并保留本地完成项）
