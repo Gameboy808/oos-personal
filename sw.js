@@ -4,7 +4,7 @@
  * - 静态资源走 cache-first（离线也能开）
  * - CACHE_VERSION 变动即强制刷新缓存
  */
-const CACHE_VERSION = "oos-white-v3";
+const CACHE_VERSION = "oos-white-v4";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -17,6 +17,7 @@ const STATIC_ASSETS = [
   "./calendar-engine.js",
   "./calendar-ui.js",
   "./oos-client.js",
+  "./oos-sync.js",
   "./favicon.svg",
   "./manifest.json"
 ];
