@@ -216,7 +216,8 @@
   }
 
   /* ---------- 设置面板 ---------- */
-  var STYLE = "#syncGearWrap{display:inline-flex;align-items:center;gap:4px;margin-left:auto;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#f0f0f0;cursor:pointer;font-size:11px;transition:all .2s ease}#syncGearWrap:hover{background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.5);color:#fff}#syncGearWrap svg{width:14px;height:14px;fill:currentColor}" +
+  var STYLE = "#syncGearFloat{position:fixed;right:22px;bottom:80px;z-index:60;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border:none;border-radius:999px;background:#1f2430;color:#fff;font-size:13px;font-weight:600;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s}#syncGearFloat:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.35)}#syncGearFloat svg{width:16px;height:16px;fill:currentColor}" +
+    "@media (max-width:640px){#syncGearFloat{right:14px;bottom:72px;padding:9px 12px;font-size:12px}}" +
     ".oos-sync-modal h3{margin:0 0 14px;font-size:18px}.oos-sync-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}" +
     ".oos-sync-row label{font-size:13px;opacity:.7}.oos-sync-token{width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.14);border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:14px}" +
     ".oos-sync-actions{display:flex;gap:10px;margin-top:6px}.oos-sync-actions button{flex:1;padding:11px;border-radius:11px;font-weight:600;cursor:pointer;border:none;font-size:13px}" +
@@ -272,24 +273,17 @@
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
-  /* ---------- 齿轮入口 ---------- */
+  /* ---------- 齿轮入口（浮动按钮，电脑/手机通用） ---------- */
+  var GEAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm7.43-2.53a7.77 7.77 0 0 0 .07-1 7.77 7.77 0 0 0-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.46 7.46 0 0 0-1.73-1l-.38-2.65A.488.488 0 0 0 13 2h-4a.488.488 0 0 0-.49.4l-.38 2.65a7.46 7.46 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L4.57 11c-.05.33-.07.66-.07 1s.02.67.07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1.01c.53.4 1.1.74 1.73 1l.38 2.65c.04.22.24.4.49.4h4c.25 0 .45-.18.49-.4l.38-2.65a7.46 7.46 0 0 0 1.73-1l2.49 1.01a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65Z"/></svg>';
   function injectGear() {
-    if (document.getElementById("syncGearWrap")) return;
-    var foot = document.querySelector(".launcher-foot");
-    if (!foot) {
-      // 如果 DOM 还没准备好，等 300ms 再试一次
-      setTimeout(injectGear, 300);
-      return;
-    }
+    if (document.getElementById("syncGearFloat")) return;
     var lang = (localStorage.getItem("oos-lang") || (navigator.language || "zh").slice(0, 2));
-    var label = (lang === "en") ? "Sync" : "同步";
+    var label = (lang === "en") ? "Sync settings" : "同步设置";
     var g = document.createElement("button");
-    g.id = "syncGearWrap"; g.type = "button"; g.title = "云端同步设置";
-    g.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm7.43-2.53a7.77 7.77 0 0 0 .07-1 7.77 7.77 0 0 0-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.46 7.46 0 0 0-1.73-1l-.38-2.65A.488.488 0 0 0 13 2h-4a.488.488 0 0 0-.49.4l-.38 2.65a7.46 7.46 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L4.57 11c-.05.33-.07.66-.07 1s.02.67.07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1.01c.53.4 1.1.74 1.73 1l.38 2.65c.04.22.24.4.49.4h4c.25 0 .45-.18.49-.4l.38-2.65a7.46 7.46 0 0 0 1.73-1l2.49 1.01a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65Z"/></svg><span>' + label + '</span>';
+    g.id = "syncGearFloat"; g.type = "button"; g.title = "云端同步设置";
+    g.innerHTML = GEAR_SVG + '<span>' + label + '</span>';
     g.addEventListener("click", openSettings);
-    foot.style.display = "flex";
-    foot.style.alignItems = "center";
-    foot.appendChild(g);
+    document.body.appendChild(g);
   }
 
   /* ---------- 暴露给 FAB ---------- */
