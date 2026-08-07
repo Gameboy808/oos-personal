@@ -216,7 +216,7 @@
   }
 
   /* ---------- 设置面板 ---------- */
-  var STYLE = "#syncGear{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:none;background:rgba(0,0,0,.06);color:#333;font-size:15px;cursor:pointer;margin-left:8px}#syncGear:hover{background:rgba(16,185,129,.18)}" +
+  var STYLE = "#syncGearWrap{display:inline-flex;align-items:center;gap:4px;margin-left:auto;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#f0f0f0;cursor:pointer;font-size:11px;transition:all .2s ease}#syncGearWrap:hover{background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.5);color:#fff}#syncGearWrap svg{width:14px;height:14px;fill:currentColor}" +
     ".oos-sync-modal h3{margin:0 0 14px;font-size:18px}.oos-sync-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}" +
     ".oos-sync-row label{font-size:13px;opacity:.7}.oos-sync-token{width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,.14);border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:14px}" +
     ".oos-sync-actions{display:flex;gap:10px;margin-top:6px}.oos-sync-actions button{flex:1;padding:11px;border-radius:11px;font-weight:600;cursor:pointer;border:none;font-size:13px}" +
@@ -274,11 +274,21 @@
 
   /* ---------- 齿轮入口 ---------- */
   function injectGear() {
+    if (document.getElementById("syncGearWrap")) return;
     var foot = document.querySelector(".launcher-foot");
-    if (!foot || document.getElementById("syncGear")) return;
+    if (!foot) {
+      // 如果 DOM 还没准备好，等 300ms 再试一次
+      setTimeout(injectGear, 300);
+      return;
+    }
+    var lang = (localStorage.getItem("oos-lang") || (navigator.language || "zh").slice(0, 2));
+    var label = (lang === "en") ? "Sync" : "同步";
     var g = document.createElement("button");
-    g.id = "syncGear"; g.type = "button"; g.textContent = "⚙"; g.title = "云端同步设置";
+    g.id = "syncGearWrap"; g.type = "button"; g.title = "云端同步设置";
+    g.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm7.43-2.53a7.77 7.77 0 0 0 .07-1 7.77 7.77 0 0 0-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.46 7.46 0 0 0-1.73-1l-.38-2.65A.488.488 0 0 0 13 2h-4a.488.488 0 0 0-.49.4l-.38 2.65a7.46 7.46 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L4.57 11c-.05.33-.07.66-.07 1s.02.67.07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1.01c.53.4 1.1.74 1.73 1l.38 2.65c.04.22.24.4.49.4h4c.25 0 .45-.18.49-.4l.38-2.65a7.46 7.46 0 0 0 1.73-1l2.49 1.01a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65Z"/></svg><span>' + label + '</span>';
     g.addEventListener("click", openSettings);
+    foot.style.display = "flex";
+    foot.style.alignItems = "center";
     foot.appendChild(g);
   }
 
