@@ -4,7 +4,7 @@
  * - 静态资源走 cache-first（离线也能开）
  * - CACHE_VERSION 变动即强制刷新缓存
  */
-const CACHE_VERSION = "oos-white-v5";
+const CACHE_VERSION = "oos-white-v6";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
