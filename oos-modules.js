@@ -13,8 +13,9 @@
   /* ============ i18n ============ */
   const I18N = {
     zh: {
-      navEnglish: "英语练习", navSocial: "自媒体运营", navInspiration: "灵感发现",
+      navEnglish: "英语练习", navSocial: "自媒体运营", navInspiration: "灵感发现", navJournal: "手帐",
       newTask: "新建", newTaskFull: "＋ 新建", langToggle: "EN",
+      newFor: { today: "＋ 新建任务", plan: "＋ 新建安排", tracks: "＋ 新建轨道", track: "＋ 新建任务", english: "＋ 新建例句", social: "＋ 新建发布", inspiration: "＋ 新建灵感", journal: "＋ 写手帐" },
       moduleEnglish: "英语练习", moduleSocial: "自媒体运营", moduleInspiration: "灵感发现",
       englishSub: "每日磨耳朵 · 盲听跟读", socialSub: "六平台账号与发布记录", inspirationSub: "每日灵感 · 一键成稿",
       engTitle: "英语练习", engSub: "选一门课，盲听→显示原文→跟读，口语自然上来",
@@ -24,17 +25,26 @@
       accountName: "账号名 / @handle", homepage: "主页链接", save: "保存", username: "账号", deletePost: "删除",
       postTitle: "标题", postLink: "链接", postTime: "时间", postDesc: "描述", addPost: "记录发布",
       inspTitle: "灵感发现", inspSub: "每天 8 条高潜选题，点收藏进想法、点成稿直接进任务",
+      journalTitle: "手帐", journalSub: "图文记录：灵感、素材、生活片段，随时翻阅",
+      journalEmpty: "还没有手记", journalPrompt: "点右下角按钮，上传第一张图、写一段文字",
+      fJournalTitle: "标题 / 主题", fJournalText: "文字记录", fJournalImages: "图片",
+      journalAdded: "手帐已保存",
       refresh: "换一批", save: "收藏", addTask: "成稿任务", heat: "热度", peak: "峰值", growth: "涨粉", recreate: "二创建议", viewDouyin: "抖音搜", viewBilibili: "B站搜",
       formTitle: "快速记录", type: "类型", typeTask: "今日 / 待办任务", typeTrack: "长期主线",
       fTitle: "要做什么", fTrack: "归哪条轨道", fTrackName: "主线名称", fDate: "定在哪一天", fNext: "下一步 / 备注", fPriority: "优先级",
+      fBlockStart: "开始时间", fBlockEnd: "结束时间", fBlockKind: "类型", fBlockNote: "备注",
+      kindFocus: "专注", kindFixed: "固定", kindRoutine: "例行", kindBuffer: "缓冲", kindErrand: "外出", kindAdmin: "行政", kindRecovery: "恢复",
+      fLesson: "加入课程", fEnglish: "英文句子", fChinese: "中文意思",
+      fInspTitle: "灵感标题", fInspCategory: "分类", fInspPlatform: "平台", fInspRecreate: "二创方向",
       priNormal: "普通", priHigh: "重要", submit: "保存", cancel: "取消",
       today: "今天", tmr: "明天",
-      saved: "已保存", taskAdded: "任务已加入今日推进", trackAdded: "长期主线已创建", pleaseTitle: "请填写标题",
+      saved: "已保存", taskAdded: "任务已加入今日推进", trackAdded: "长期主线已创建", blockAdded: "安排已加入计划", sentenceAdded: "例句已加入课程", inspAdded: "灵感已收藏", pleaseTitle: "请填写标题",
       langZH: "中", langEN: "EN"
     },
     en: {
-      navEnglish: "English", navSocial: "Social Media", navInspiration: "Inspiration",
+      navEnglish: "English", navSocial: "Social Media", navInspiration: "Inspiration", navJournal: "Journal",
       newTask: "New", newTaskFull: "+ New", langToggle: "中",
+      newFor: { today: "+ New task", plan: "+ New block", tracks: "+ New track", track: "+ New task", english: "+ New sentence", social: "+ New post", inspiration: "+ New idea", journal: "+ New journal" },
       moduleEnglish: "English", moduleSocial: "Social Media", moduleInspiration: "Inspiration",
       englishSub: "Daily listening · blind + shadow", socialSub: "6 platforms · accounts & posts", inspirationSub: "Daily ideas · one-tap to draft",
       engTitle: "English Practice", engSub: "Pick a lesson, blind-listen → reveal → shadow. Speaking improves naturally",
@@ -44,12 +54,20 @@
       accountName: "Username / @handle", homepage: "Homepage", save: "Save", username: "Account", deletePost: "Delete",
       postTitle: "Title", postLink: "Link", postTime: "Time", postDesc: "Description", addPost: "Log post",
       inspTitle: "Inspiration Engine", inspSub: "8 high-potential topics daily. Save to ideas, or turn into a task",
+      journalTitle: "Journal", journalSub: "Photo + text notes: ideas, materials, life moments",
+      journalEmpty: "No journal entries yet", journalPrompt: "Tap the button to upload your first image and write a note",
+      fJournalTitle: "Title / Theme", fJournalText: "Note", fJournalImages: "Images",
+      journalAdded: "Journal saved",
       refresh: "Shuffle", save: "Save", addTask: "To task", heat: "Heat", peak: "Peak", growth: "Growth", recreate: "Recreate", viewDouyin: "Search Douyin", viewBilibili: "Search Bilibili",
       formTitle: "Quick Capture", type: "Type", typeTask: "Today / To-do", typeTrack: "Long-term Track",
       fTitle: "What to do", fTrack: "Track", fTrackName: "Track name", fDate: "Due date", fNext: "Next step / note", fPriority: "Priority",
+      fBlockStart: "Start", fBlockEnd: "End", fBlockKind: "Kind", fBlockNote: "Note",
+      kindFocus: "Focus", kindFixed: "Fixed", kindRoutine: "Routine", kindBuffer: "Buffer", kindErrand: "Errand", kindAdmin: "Admin", kindRecovery: "Recovery",
+      fLesson: "Lesson", fEnglish: "English sentence", fChinese: "Chinese meaning",
+      fInspTitle: "Idea title", fInspCategory: "Category", fInspPlatform: "Platform", fInspRecreate: "Recreate angle",
       priNormal: "Normal", priHigh: "High", submit: "Save", cancel: "Cancel",
       today: "Today", tmr: "Tomorrow",
-      saved: "Saved", taskAdded: "Task added to Today", trackAdded: "Long-term track created", pleaseTitle: "Please enter a title",
+      saved: "Saved", taskAdded: "Task added to Today", trackAdded: "Long-term track created", blockAdded: "Block added to plan", sentenceAdded: "Sentence added to lesson", inspAdded: "Idea saved", pleaseTitle: "Please enter a title",
       langZH: "中", langEN: "EN"
     }
   };
@@ -140,10 +158,13 @@
   /* ============ 自有本地数据（灵感收藏 / 自媒体发布记录，独立于 state.json） ============ */
   const LS_SOCIAL = "oos-social-v1";
   const LS_INSP = "oos-insp-v1";
+  const LS_JOURNAL = "oos-journal-v1";
   function getSocial() { try { return JSON.parse(localStorage.getItem(LS_SOCIAL)) || {}; } catch (e) { return {}; } }
   function saveSocial(d) { try { localStorage.setItem(LS_SOCIAL, JSON.stringify(d)); } catch (e) {} }
   function getInsp() { try { return JSON.parse(localStorage.getItem(LS_INSP)) || { favs: [], saved: [] }; } catch (e) { return { favs: [], saved: [] }; } }
   function saveInsp(d) { try { localStorage.setItem(LS_INSP, JSON.stringify(d)); } catch (e) {} }
+  function getJournal() { try { return JSON.parse(localStorage.getItem(LS_JOURNAL)) || []; } catch (e) { return []; } }
+  function saveJournal(d) { try { localStorage.setItem(LS_JOURNAL, JSON.stringify(d)); } catch (e) {} }
 
   /* ============ 注入样式 ============ */
   const STYLE = `
@@ -241,6 +262,22 @@
   .oos-btn-primary:hover{filter:brightness(1.05)}
   .oos-btn-ghost{background:rgba(0,0,0,.06)}
   .track-new-btn{margin-left:auto;padding:7px 13px;border-radius:9px;background:#10b981;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer}
+  .nav-tracks-header{display:flex;align-items:center;justify-content:space-between;padding:0 8px 5px;color:#77746f;font-size:9px;letter-spacing:.085em;text-transform:uppercase}
+  .nav-tracks-header button{padding:3px 7px;border-radius:5px;background:rgba(255,255,255,.1);color:#c7c4bd;border:none;font-size:10px;cursor:pointer}
+  .nav-tracks-header button:hover{background:#10b981;color:#fff}
+  .fab-hidden{display:none!important}
+  /* 手帐 */
+  .journal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .journal-card{background:var(--bg-card,#fff);border:1px solid var(--border-card,rgba(0,0,0,.08));border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform .2s,box-shadow .2s}
+  .journal-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.08)}
+  .journal-date{font-size:11px;opacity:.5;font-weight:700;letter-spacing:.04em}
+  .journal-card-title{font-size:16px;font-weight:700}
+  .journal-text{font-size:13px;opacity:.75;line-height:1.55;margin:0;max-height:4.6em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+  .journal-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .journal-thumb{width:72px;height:72px;object-fit:cover;border-radius:10px;background:#f0f0f0}
+  .journal-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:.6;gap:8px}
+  .journal-form-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  @media(max-width:640px){.journal-grid{grid-template-columns:1fr}}
   `;
 
   function injectStyle() { const s = document.createElement("style"); s.textContent = STYLE; document.head.appendChild(s); }
@@ -253,7 +290,8 @@
     const items = [
       { mod: "english", label: t("navEnglish"), sub: "English" },
       { mod: "social", label: t("navSocial"), sub: "Social" },
-      { mod: "inspiration", label: t("navInspiration"), sub: "Ideas" }
+      { mod: "inspiration", label: t("navInspiration"), sub: "Ideas" },
+      { mod: "journal", label: t("navJournal"), sub: "Journal" }
     ];
     items.forEach(it => {
       const b = document.createElement("button");
@@ -303,6 +341,7 @@
     if (mod === "english") c.innerHTML = renderEnglish();
     else if (mod === "social") c.innerHTML = renderSocial();
     else if (mod === "inspiration") c.innerHTML = renderInspiration();
+    else if (mod === "journal") c.innerHTML = renderJournal();
     window.scrollTo(0, 0);
   }
 
@@ -467,70 +506,230 @@
     }));
   }
 
-  /* ============ 新建表单 ============ */
+  /* ============ 当前上下文（决定新建按钮含义） ============ */
+  function getContext() {
+    // 模块优先
+    if (currentMod) return currentMod;
+    // 原视图
+    const active = document.querySelector('.nav-item[data-view].active');
+    if (active) return active.dataset.view;
+    // body class 兜底
+    if (document.body.classList.contains("plan-mode")) return "plan";
+    if (document.body.classList.contains("tracks-mode")) return "tracks";
+    if (document.body.classList.contains("track-mode")) return "track";
+    return "today";
+  }
+  function fabLabelFor(ctx) {
+    const map = I18N[LANG].newFor;
+    return map[ctx] || map["today"];
+  }
+  function openCreateForContext(ctx) {
+    if (ctx === "plan") return openBlockForm();
+    if (ctx === "tracks") return openTrackForm();
+    if (ctx === "track") return openTaskFormForTrack();
+    if (ctx === "english") return openSentenceForm();
+    if (ctx === "social") return openSocialPostForm();
+    if (ctx === "inspiration") return openInspirationForm();
+    if (ctx === "journal") return openJournalForm();
+    return openTaskForm();
+  }
+
+  /* ============ 新建 FAB（上下文感知） ============ */
   let newFabEl = null;
   function injectNewFab() {
     if (document.getElementById("newFab")) return;
     const b = document.createElement("button");
-    b.id = "newFab"; b.innerHTML = `<span class="nf-icon">＋</span><span class="nf-label">${t("newTaskFull")}</span>`;
-    b.addEventListener("click", openNewForm);
+    b.id = "newFab"; b.innerHTML = `<span class="nf-icon">＋</span><span class="nf-label">${fabLabelFor(getContext())}</span>`;
+    b.addEventListener("click", () => openCreateForContext(getContext()));
     document.body.appendChild(b); newFabEl = b;
+    // 监听视图变化以更新文案
+    observeContext(updateFab);
   }
+  function updateFab() {
+    if (!newFabEl) return;
+    const ctx = getContext();
+    const label = fabLabelFor(ctx);
+    const txt = newFabEl.querySelector(".nf-label");
+    if (txt && txt.textContent !== label) txt.textContent = label;
+    // 复制当前 handler：移除旧 listener 比较麻烦，直接替换按钮
+    const clone = newFabEl.cloneNode(true);
+    clone.addEventListener("click", () => openCreateForContext(getContext()));
+    newFabEl.parentNode.replaceChild(clone, newFabEl);
+    newFabEl = clone;
+    // Plan/Track 页面 FAB 与页面内已有大按钮共存；其他模块保留
+    const hideOn = [];
+    newFabEl.classList.toggle("fab-hidden", hideOn.includes(ctx));
+  }
+  function observeContext(cb) {
+    const vc = document.getElementById("viewContent");
+    if (!vc) return;
+    new MutationObserver(cb).observe(vc, { childList: true });
+    // 原导航点击也会切换视图
+    document.querySelectorAll('.nav-item[data-view], [data-module]').forEach(b => b.addEventListener("click", () => setTimeout(cb, 50)));
+  }
+
   function tracksList() {
-    // 从当前 state 取轨道名
     try {
       const s = window.__OOS_STATE && window.__OOS_STATE();
       if (s && s.tracks) return s.tracks.map(x => x.name);
     } catch (e) {}
     return ["自媒体起飞", "数字游民攒钱", "生活上安排事情"];
   }
-  function openNewForm(presetType) {
-    const type = presetType || "task";
-    const trackOpts = tracksList().map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
-    openModal(`<h3>${t("formTitle")}</h3>
-      <div class="oos-field"><label>${t("type")}</label><div class="oos-seg" id="newType">
-        <button data-t="task" class="${type === "task" ? "active" : ""}">${t("typeTask")}</button>
-        <button data-t="track" class="${type === "track" ? "active" : ""}">${t("typeTrack")}</button>
-      </div></div>
-      <div id="newTaskFields">
-        <div class="oos-field"><label>${t("fTitle")}</label><input id="nfTitle" placeholder="例如：剪完第一条口播视频"></div>
-        <div class="oos-field"><label>${t("fTrack")}</label><select id="nfTrack">${trackOpts}</select></div>
-        <div class="oos-field"><label>${t("fDate")}</label><input id="nfDate" type="date" value="${todayIso()}"></div>
-        <div class="oos-field"><label>${t("fNext")}</label><textarea id="nfNext" placeholder="最小下一步"></textarea></div>
-        <div class="oos-field"><label>${t("fPriority")}</label><select id="nfPri"><option value="normal">${t("priNormal")}</option><option value="high">${t("priHigh")}</option></select></div>
-      </div>
-      <div id="newTrackFields" style="display:${type === "track" ? "block" : "none"}">
-        <div class="oos-field"><label>${t("fTrackName")}</label><input id="nfTrackName" placeholder="例如：每天英语口语打卡"></div>
-        <div class="oos-field"><label>${t("fNext")}</label><textarea id="nfTrackNext" placeholder="这条主线要达成的目标"></textarea></div>
-      </div>
+  function trackNameOpts(selected) {
+    return tracksList().map(n => `<option value="${esc(n)}" ${n === selected ? "selected" : ""}>${esc(n)}</option>`).join("");
+  }
+
+  /* ---------- 各视图新建表单 ---------- */
+  function openTaskForm(goal) {
+    const trackOpts = trackNameOpts(goal);
+    openModal(`<h3>${t("newFor").today}</h3>
+      <div class="oos-field"><label>${t("fTitle")}</label><input id="nfTitle" placeholder="例如：剪完第一条口播视频"></div>
+      <div class="oos-field"><label>${t("fTrack")}</label><select id="nfTrack">${trackOpts}</select></div>
+      <div class="oos-field"><label>${t("fDate")}</label><input id="nfDate" type="date" value="${todayIso()}"></div>
+      <div class="oos-field"><label>${t("fNext")}</label><textarea id="nfNext" placeholder="最小下一步"></textarea></div>
+      <div class="oos-field"><label>${t("fPriority")}</label><select id="nfPri"><option value="normal">${t("priNormal")}</option><option value="high">${t("priHigh")}</option></select></div>
       <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="nfSubmit">${t("submit")}</button></div>`,
       () => {
-        document.querySelectorAll("#newType button").forEach(btn => btn.addEventListener("click", () => {
-          document.querySelectorAll("#newType button").forEach(x => x.classList.remove("active"));
-          btn.classList.add("active");
-          const isTrack = btn.dataset.t === "track";
-          document.getElementById("newTaskFields").style.display = isTrack ? "none" : "block";
-          document.getElementById("newTrackFields").style.display = isTrack ? "block" : "none";
-        }));
         document.getElementById("nfSubmit").addEventListener("click", () => {
-          const isTrack = document.querySelector("#newType button.active").dataset.t === "track";
-          if (isTrack) {
-            const name = document.getElementById("nfTrackName").value.trim();
-            if (!name) { toastMsg(t("pleaseTitle")); return; }
-            createTrack({ name, nextAction: document.getElementById("nfTrackNext").value.trim() });
-            closeModal(); toastMsg(t("trackAdded"));
-          } else {
-            const title = document.getElementById("nfTitle").value.trim();
-            if (!title) { toastMsg(t("pleaseTitle")); return; }
-            createTask({
-              title,
-              goal: document.getElementById("nfTrack").value,
-              nextStep: document.getElementById("nfNext").value.trim(),
-              due: document.getElementById("nfDate").value || todayIso(),
-              priority: document.getElementById("nfPri").value
-            });
-            closeModal(); toastMsg(t("taskAdded"));
+          const title = document.getElementById("nfTitle").value.trim();
+          if (!title) { toastMsg(t("pleaseTitle")); return; }
+          createTask({
+            title, goal: document.getElementById("nfTrack").value,
+            nextStep: document.getElementById("nfNext").value.trim(),
+            due: document.getElementById("nfDate").value || todayIso(),
+            priority: document.getElementById("nfPri").value
+          });
+          closeModal(); toastMsg(t("taskAdded"));
+        });
+      });
+  }
+  function openTaskFormForTrack() {
+    // 在单个轨道详情页：自动选当前轨道
+    let selectedGoal = "";
+    try {
+      const s = window.__OOS_STATE && window.__OOS_STATE();
+      const activeTrack = document.querySelector('.nav-track.active');
+      const trackId = activeTrack ? activeTrack.dataset.track : "";
+      if (s && s.tracks && trackId) {
+        const tr = s.tracks.find(x => x.id === trackId);
+        if (tr) selectedGoal = tr.name;
+      }
+    } catch (e) {}
+    openTaskForm(selectedGoal);
+  }
+  function openTrackForm() {
+    openModal(`<h3>${t("newFor").tracks}</h3>
+      <div class="oos-field"><label>${t("fTrackName")}</label><input id="nfTrackName" placeholder="例如：每天英语口语打卡"></div>
+      <div class="oos-field"><label>${t("fNext")}</label><textarea id="nfTrackNext" placeholder="这条主线要达成的目标 / 为什么重要"></textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="nfSubmit">${t("submit")}</button></div>`,
+      () => {
+        document.getElementById("nfSubmit").addEventListener("click", () => {
+          const name = document.getElementById("nfTrackName").value.trim();
+          if (!name) { toastMsg(t("pleaseTitle")); return; }
+          createTrack({ name, nextAction: document.getElementById("nfTrackNext").value.trim() });
+          closeModal(); toastMsg(t("trackAdded"));
+        });
+      });
+  }
+  function openBlockForm() {
+    const kindOpts = ["focus", "fixed", "routine", "buffer", "errand", "admin", "recovery"]
+      .map(k => `<option value="${k}">${t("kind" + k.charAt(0).toUpperCase() + k.slice(1))}</option>`).join("");
+    const start = new Date();
+    start.setMinutes(Math.ceil(start.getMinutes() / 15) * 15, 0, 0);
+    const end = new Date(start.getTime() + 30 * 60000);
+    const toIsoLocal = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    openModal(`<h3>${t("newFor").plan}</h3>
+      <div class="oos-field"><label>${t("fTitle")}</label><input id="nbTitle" placeholder="例如：剪视频 / 学英语 / 拍摄"></div>
+      <div class="oos-field"><label>${t("fBlockKind")}</label><select id="nbKind">${kindOpts}</select></div>
+      <div class="oos-field"><label>${t("fBlockStart")}</label><input id="nbStart" type="datetime-local" value="${toIsoLocal(start)}"></div>
+      <div class="oos-field"><label>${t("fBlockEnd")}</label><input id="nbEnd" type="datetime-local" value="${toIsoLocal(end)}"></div>
+      <div class="oos-field"><label>${t("fTrack")}</label><select id="nbTrack"><option value="">${LANG === "zh" ? "不归轨道" : "No track"}</option>${trackNameOpts()}</select></div>
+      <div class="oos-field"><label>${t("fBlockNote")}</label><textarea id="nbNote" placeholder="备注 / 地点 / 准备事项"></textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="nbSubmit">${t("submit")}</button></div>`,
+      () => {
+        document.getElementById("nbSubmit").addEventListener("click", () => {
+          const title = document.getElementById("nbTitle").value.trim();
+          if (!title) { toastMsg(t("pleaseTitle")); return; }
+          const startAt = document.getElementById("nbStart").value;
+          const endAt = document.getElementById("nbEnd").value;
+          if (!startAt || !endAt) { toastMsg("请选择起止时间"); return; }
+          createBlock({
+            title, kind: document.getElementById("nbKind").value,
+            startAt, endAt,
+            goal: document.getElementById("nbTrack").value || undefined,
+            note: document.getElementById("nbNote").value.trim()
+          });
+          closeModal(); toastMsg(t("blockAdded"));
+        });
+      });
+  }
+  function openSentenceForm() {
+    const lessonOpts = ENGLISH_LESSONS.map((l, i) => `<option value="${i}">${esc(LANG === "zh" ? l.zh : l.title)}</option>`).join("");
+    openModal(`<h3>${t("newFor").english}</h3>
+      <div class="oos-field"><label>${t("fLesson")}</label><select id="nsLesson">${lessonOpts}</select></div>
+      <div class="oos-field"><label>${t("fEnglish")}</label><input id="nsEn" placeholder="例如：I built this app in one week."></div>
+      <div class="oos-field"><label>${t("fChinese")}</label><input id="nsZh" placeholder="例如：我一周就搭好了这个应用。"></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="nsSubmit">${t("submit")}</button></div>`,
+      () => {
+        document.getElementById("nsSubmit").addEventListener("click", () => {
+          const en = document.getElementById("nsEn").value.trim();
+          if (!en) { toastMsg(t("pleaseTitle")); return; }
+          const li = +document.getElementById("nsLesson").value;
+          if (ENGLISH_LESSONS[li]) {
+            ENGLISH_LESSONS[li].sentences.push({ en, zh: document.getElementById("nsZh").value.trim() });
+            saveCustomSentences();
           }
+          closeModal(); toastMsg(t("sentenceAdded")); switchModule("english");
+        });
+      });
+  }
+  function openSocialPostForm() {
+    const platformOpts = SOCIAL_PLATFORMS.map(p => `<option value="${p.key}">${esc(p.name)}</option>`).join("");
+    openModal(`<h3>${t("newFor").social}</h3>
+      <div class="oos-field"><label>${LANG === "zh" ? "平台" : "Platform"}</label><select id="nspPlatform">${platformOpts}</select></div>
+      <div class="oos-field"><label>${t("postTitle")}</label><input id="nspTitle"></div>
+      <div class="oos-field"><label>${t("postLink")}</label><input id="nspLink" placeholder="https://..."></div>
+      <div class="oos-field"><label>${t("postTime")}</label><input id="nspTime" type="datetime-local" value="${new Date().toISOString().slice(0, 16)}"></div>
+      <div class="oos-field"><label>${t("postDesc")}</label><textarea id="nspDesc"></textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="nspSubmit">${t("submit")}</button></div>`,
+      () => {
+        document.getElementById("nspSubmit").addEventListener("click", () => {
+          const title = document.getElementById("nspTitle").value.trim();
+          if (!title) { toastMsg(t("pleaseTitle")); return; }
+          const key = document.getElementById("nspPlatform").value;
+          const d = getSocial(); if (!d[key]) d[key] = { username: "", homepage: "", posts: [] };
+          d[key].posts.unshift({
+            id: "p" + Date.now(), title,
+            link: document.getElementById("nspLink").value.trim(),
+            time: document.getElementById("nspTime").value,
+            description: document.getElementById("nspDesc").value.trim()
+          });
+          saveSocial(d); closeModal(); toastMsg(t("saved")); switchModule("social");
+        });
+      });
+  }
+  function openInspirationForm() {
+    const platformOpts = [{k:"douyin",n:"抖音"},{k:"bilibili",n:"B站"},{k:"xiaohongshu",n:"小红书"},{k:"shipin",n:"视频号"}]
+      .map(p => `<option value="${p.k}">${esc(p.n)}</option>`).join("");
+    openModal(`<h3>${t("newFor").inspiration}</h3>
+      <div class="oos-field"><label>${t("fInspTitle")}</label><input id="niTitle" placeholder="例如：无锡最值得拍的 10 家小酒馆"></div>
+      <div class="oos-field"><label>${t("fInspCategory")}</label><input id="niCategory" placeholder="例如：生活 / 探店 / 摄影"></div>
+      <div class="oos-field"><label>${t("fInspPlatform")}</label><select id="niPlatform">${platformOpts}</select></div>
+      <div class="oos-field"><label>${t("fInspRecreate")}</label><textarea id="niRecreate" placeholder="可以怎么拍 / 差异化角度"></textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="niSubmit">${t("submit")}</button></div>`,
+      () => {
+        document.getElementById("niSubmit").addEventListener("click", () => {
+          const title = document.getElementById("niTitle").value.trim();
+          if (!title) { toastMsg(t("pleaseTitle")); return; }
+          const item = {
+            id: "insp-u" + Date.now(), t: title,
+            c: document.getElementById("niCategory").value.trim() || "灵感",
+            p: document.getElementById("niPlatform").value,
+            r: document.getElementById("niRecreate").value.trim(),
+            h: 0, pk: 0, g: 0
+          };
+          const insp = getInsp(); if (!insp.custom) insp.custom = []; insp.custom.unshift(item); saveInsp(insp);
+          closeModal(); toastMsg(t("inspAdded")); switchModule("inspiration");
         });
       });
   }
@@ -561,6 +760,105 @@
     if (window.stateOps) window.stateOps([{ type: "track.create", track }], t("trackAdded"));
     else console.warn("stateOps unavailable");
   }
+  function createBlock(obj) {
+    const id = "block-u" + Date.now();
+    const block = {
+      id, title: obj.title, kind: obj.kind || "focus",
+      startAt: obj.startAt, endAt: obj.endAt,
+      goal: obj.goal || "", note: obj.note || "",
+      status: "active", locked: false
+    };
+    if (window.stateOps) window.stateOps([{ type: "schedule.create", block }], t("blockAdded"));
+    else console.warn("stateOps unavailable");
+  }
+  // 自定义例句（仅内存 + localStorage 镜像，云端同步通过 oos-eng / oos-social / oos-insp 桶）
+  function saveCustomSentences() {
+    try {
+      const custom = ENGLISH_LESSONS.map((l, i) => l.sentences.slice(5).map((s, idx) => ({ ...s, lesson: i, idx: idx + 5 }))).flat();
+      localStorage.setItem("oos-eng-custom", JSON.stringify(custom));
+    } catch (e) {}
+  }
+  function loadCustomSentences() {
+    try {
+      const raw = localStorage.getItem("oos-eng-custom");
+      if (!raw) return;
+      const custom = JSON.parse(raw);
+      custom.forEach(c => {
+        const l = ENGLISH_LESSONS[c.lesson];
+        if (l && l.sentences[c.idx] && l.sentences[c.idx].en === c.en) return;
+        if (l) l.sentences.push({ en: c.en, zh: c.zh });
+      });
+    } catch (e) {}
+  }
+  loadCustomSentences();
+
+  /* ============ 手帐 / Journal 模块 ============ */
+  function renderJournal() {
+    const entries = getJournal().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    const cards = entries.map(e => {
+      const thumbs = (e.images || []).slice(0, 4).map(src => `<img src="${esc(src)}" class="journal-thumb" loading="lazy" />`).join("");
+      return `<div class="journal-card" data-journal-id="${esc(e.id)}">
+        <div class="journal-date">${esc(e.date || "")}</div>
+        <div class="journal-card-title">${esc(e.title || "")}</div>
+        <p class="journal-text">${esc(e.text || "").replace(/\n/g, "<br>")}</p>
+        <div class="journal-thumbs">${thumbs}</div>
+      </div>`;
+    }).join("");
+    return `<div class="mod-wrap">
+      <div class="mod-head"><div><h2>${t("journalTitle")}</h2><p>${t("journalSub")}</p></div></div>
+      ${cards ? `<div class="journal-grid">${cards}</div>` : `<div class="journal-empty"><strong>${t("journalEmpty")}</strong><p>${t("journalPrompt")}</p></div>`}
+    </div>`;
+  }
+  function bindJournal() {}
+  function openJournalForm() {
+    let pendingImages = [];
+    openModal(`<h3>${t("newFor").journal}</h3>
+      <div class="oos-field"><label>${t("fJournalTitle")}</label><input id="njTitle" placeholder="例如：今天拍的菜品参考 / 酒吧氛围"></div>
+      <div class="oos-field"><label>${t("fDate")}</label><input id="njDate" type="date" value="${todayIso()}"></div>
+      <div class="oos-field"><label>${t("fJournalText")}</label><textarea id="njText" rows="4" placeholder="记录当时的情境、想法、后续怎么用"></textarea></div>
+      <div class="oos-field"><label>${t("fJournalImages")}</label><input id="njImages" type="file" accept="image/*" multiple></div>
+      <div id="njPreview" class="journal-form-thumbs"></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="njSubmit">${t("submit")}</button></div>`,
+      () => {
+        const preview = document.getElementById("njPreview");
+        document.getElementById("njImages").addEventListener("change", function () {
+          const files = Array.from(this.files);
+          files.forEach(file => compressImage(file, 1200, 0.7).then(b64 => {
+            pendingImages.push(b64);
+            const img = document.createElement("img"); img.src = b64; img.className = "journal-thumb"; preview.appendChild(img);
+          }));
+        });
+        document.getElementById("njSubmit").addEventListener("click", () => {
+          const title = document.getElementById("njTitle").value.trim();
+          if (!title && !pendingImages.length) { toastMsg(t("pleaseTitle")); return; }
+          const entry = {
+            id: "journal-u" + Date.now(),
+            date: document.getElementById("njDate").value || todayIso(),
+            title, text: document.getElementById("njText").value.trim(),
+            images: pendingImages, createdAt: new Date().toISOString()
+          };
+          const list = getJournal(); list.unshift(entry); saveJournal(list);
+          closeModal(); toastMsg(t("journalAdded")); switchModule("journal");
+        });
+      });
+  }
+  function compressImage(file, maxWidth, quality) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          const ratio = Math.min(1, maxWidth / img.width);
+          canvas.width = img.width * ratio; canvas.height = img.height * ratio;
+          const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/webp", quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   /* ============ Modal 工具 ============ */
   function openModal(html, onMount) {
@@ -578,15 +876,15 @@
     const target = document.getElementById("viewContent");
     if (!target) return;
     const mo = new MutationObserver(() => {
-      const head = target.querySelector(".tracks-head, .section-head, h2");
+      const head = target.querySelector(".tracks-head, .section-head, h2, .panel-head");
       // 仅在 tracks 视图且尚未注入时添加按钮
       if (document.querySelector('.nav-item[data-view="tracks"].active') && !document.getElementById("trackNewBtn")) {
-        const anchor = target.querySelector(".two-col, .track-grid, .tracks-list") || target.firstElementChild;
-        if (anchor) {
+        const anchor = target.querySelector(".two-col, .track-grid, .tracks-list, .panel") || target.firstElementChild;
+        if (anchor && head && !head.querySelector("#trackNewBtn")) {
           const b = document.createElement("button");
-          b.id = "trackNewBtn"; b.className = "track-new-btn"; b.textContent = "＋ " + (LANG === "zh" ? "新建长期主线" : "New Track");
-          b.addEventListener("click", () => openNewForm("track"));
-          anchor.parentNode.insertBefore(b, anchor);
+          b.id = "trackNewBtn"; b.className = "track-new-btn"; b.textContent = "＋ " + (LANG === "zh" ? "新建轨道" : "New Track");
+          b.addEventListener("click", () => openTrackForm());
+          head.appendChild(b);
         }
       }
     });
@@ -600,23 +898,40 @@
     injectNewFab();
     observeTracks();
     // 暴露给内联 onclick
-    window.OOSM = { openExternal };
+    window.OOSM = { openExternal, openTrackForm, openTaskForm };
     // 切换回原视图时同步模块导航高亮
     const origNav = document.querySelectorAll('.nav-item[data-view]');
     origNav.forEach(b => b.addEventListener("click", () => {
+      currentMod = null;
       document.querySelectorAll('[data-module]').forEach(x => x.classList.remove("active"));
+      setTimeout(updateFab, 50);
     }));
+    // 侧边栏轨道区域 header + 新建按钮（桌面端）
+    setTimeout(injectTrackSidebarHeader, 300);
+  }
+
+  function injectTrackSidebarHeader() {
+    const navTracks = document.getElementById("navTracks");
+    if (!navTracks || document.getElementById("navTracksHeader")) return;
+    const hdr = document.createElement("div");
+    hdr.id = "navTracksHeader";
+    hdr.className = "nav-tracks-header";
+    hdr.innerHTML = `<span>${LANG === "zh" ? "长期轨道" : "Life Tracks"}</span><button id="navTrackNew" title="${LANG === "zh" ? "新建轨道" : "New track"}">＋</button>`;
+    navTracks.parentNode.insertBefore(hdr, navTracks);
+    document.getElementById("navTrackNew").addEventListener("click", () => openTrackForm());
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
   // 在视图渲染后绑定模块内交互
-  const origPush = history.pushState;
   function afterRenderBind() {
     if (currentMod === "english") bindEnglish();
     else if (currentMod === "social") bindSocial();
     else if (currentMod === "inspiration") bindInspiration();
+    else if (currentMod === "journal") bindJournal();
+    updateFab();
+    injectTrackSidebarHeader();
   }
   // 监听 viewContent 变化以绑定
   const vc = document.getElementById("viewContent");
