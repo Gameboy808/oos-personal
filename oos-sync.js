@@ -13,7 +13,7 @@
 
   var REPO = "Gameboy808/oos-cloud-data";
   var PATH = "data.json";
-  var BUCKETS = ["oos-state-local-v1", "oos-social-v1", "oos-insp-v1", "oos-eng"];
+  var BUCKETS = ["oos-state-local-v1", "oos-social-v1", "oos-insp-v1", "oos-eng", "oos-journal-v1"];
   var LS_TOKEN = "oos-sync-token";
   var LS_CFG = "oos-sync-cfg";
   var LS_AT = "oos-sync-at";
@@ -93,11 +93,22 @@
           });
           localStorage.setItem(k, JSON.stringify(sLocal));
         } else if (k === "oos-insp-v1") {
-          var iLocal = local[k] || { favs: [], saved: [] };
-          var iCloud = cb || { favs: [], saved: [] };
+          var iLocal = local[k] || { favs: [], saved: [], custom: [] };
+          var iCloud = cb || { favs: [], saved: [], custom: [] };
           iLocal.favs = unionArr(iLocal.favs, iCloud.favs);
           iLocal.saved = unionArr(iLocal.saved, iCloud.saved);
+          var cmap = {};
+          (iLocal.custom || []).forEach(function (x) { if (x && x.id) cmap[x.id] = x; });
+          (iCloud.custom || []).forEach(function (x) { if (x && x.id) cmap[x.id] = x; });
+          iLocal.custom = Object.keys(cmap).map(function (id) { return cmap[id]; });
           localStorage.setItem(k, JSON.stringify(iLocal));
+        } else if (k === "oos-journal-v1") {
+          var jLocal = local[k] || [];
+          var jCloud = cb || [];
+          var jmap = {};
+          jLocal.forEach(function (x) { if (x && x.id) jmap[x.id] = x; });
+          jCloud.forEach(function (x) { if (x && x.id) jmap[x.id] = x; });
+          localStorage.setItem(k, JSON.stringify(Object.keys(jmap).map(function (id) { return jmap[id]; })));
         } else {
           localStorage.setItem(k, JSON.stringify(cb)); // oos-eng 等小对象：云端为准
         }
