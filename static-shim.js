@@ -126,6 +126,14 @@
             }
           }
           break;
+        case "track.update":
+          if (op.targetId && op.patch) {
+            var t2 = (state.tracks || []).find(function (x) { return x.id === op.targetId; });
+            if (t2) Object.assign(t2, op.patch);
+            var g2 = (state.goals || []).find(function (x) { return x.id === op.targetId; });
+            if (g2) Object.assign(g2, op.patch);
+          }
+          break;
         case "onboarding.advance":
           if (op.step != null) { state.onboarding = state.onboarding || {}; state.onboarding.firstFlight = state.onboarding.firstFlight || {}; state.onboarding.firstFlight.currentStep = op.step; }
           break;
