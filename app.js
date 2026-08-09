@@ -77,6 +77,18 @@ function tracks() { return list(state?.tracks).length ? list(state.tracks) : lis
 function track(id) { return tracks().find((item) => item.id === id); }
 function goal(id) { return list(state?.goals).find((item) => item.id === id); }
 function trackName(id) { return track(id)?.name || goal(id)?.name || (id === "system" ? "System" : id === "inbox" ? "Inbox" : "未分类"); }
+
+// 轨道调色板：每条轨道一个颜色，日历/导航按轨道分色。可在「编辑轨道」里改。
+const TRACK_PALETTE = ["#E5484D","#F76808","#FFB224","#46A758","#12A594","#0091FF","#6564DB","#8E4EC6","#E93D82","#6E7681","#A16207","#0CA5E9"];
+window.TRACK_PALETTE = TRACK_PALETTE;
+function trackColorHex(id) {
+  const item = track(id) || goal(id);
+  if (item && item.color) return item.color;
+  // 已有轨道若没存颜色，按 id 稳定取一个，保证每次打开颜色一致
+  let hash = 0; const seed = String(id || "system");
+  for (let i = 0; i < seed.length; i += 1) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return TRACK_PALETTE[hash % TRACK_PALETTE.length];
+}
 function navName(item) { return item.navLabel || item.shortName || item.name || item.id; }
 
 function trackHealth(id) {
@@ -420,6 +432,7 @@ function renderPlanV2() {
       getMeta: () => stateMeta,
       today: todayIso,
       trackName,
+      trackColor: trackColorHex,
       toast,
       openEditor: openBlockEditor,
       mutate: stateOps,
@@ -470,7 +483,7 @@ function renderTrack(id) {
   $("#pageTitle").textContent = navName(item);
   const special = archetypePanel(archetype, item, health, tasks, milestones, relatedNotes);
   const nextBlock = activeBlocks().filter((block) => block.goal === id && block.startAt).sort((left, right) => blockStart(left) - blockStart(right))[0];
-  $("#viewContent").innerHTML = `<button type="button" class="back-link" data-view="tracks">← 返回 Tracks</button><section class="track-hero archetype-${archetype}"><div><span class="eyebrow">${esc(item.role || archetype)} · ${esc(healthLabel[health.status] || health.status || "活跃")}</span><h2>${esc(item.name)}</h2><p>${esc(item.summary || item.nextAction || "下一步待补充。")}</p></div><aside class="track-summary-metrics"><div><span>当前阶段</span><strong>${esc(item.stage || "待补充")}</strong></div><div><span>下一动作</span><strong>${esc(shortText(item.nextAction || "待补充", 70))}</strong></div><div><span>下一日程</span><strong>${esc(nextBlock ? `${blockTime(nextBlock.startAt, true)} · ${nextBlock.title}` : "尚未排期")}</strong></div></aside></section>${special}<div class="two-col">${section("开放任务", `${tasks.length} 项仍在轨道上`, `<div class="task-list">${tasks.map((task) => taskCard(task, true)).join("") || emptyState("没有开放任务", "如果轨道仍然活跃，补一个最小下一步。")}</div>`)}${section("相关笔记", "用于快速恢复上下文", `<div class="note-list compact">${relatedNotes.slice(0, 6).map(noteRow).join("") || emptyState("暂无关联笔记", "只保存未来值得重新读到的内容。")}</div>`)}</div>`;
+  $("#viewContent").innerHTML = `<button type="button" class="back-link" data-view="tracks">← 返回 Tracks</button><button type="button" class="oos-edit-track" data-edit-track="${esc(id)}">编辑轨道</button><section class="track-hero archetype-${archetype}"><div><span class="eyebrow">${esc(item.role || archetype)} · ${esc(healthLabel[health.status] || health.status || "活跃")}</span><h2>${esc(item.name)}</h2><p>${esc(item.summary || item.nextAction || "下一步待补充。")}</p></div><aside class="track-summary-metrics"><div><span>当前阶段</span><strong>${esc(item.stage || "待补充")}</strong></div><div><span>下一动作</span><strong>${esc(shortText(item.nextAction || "待补充", 70))}</strong></div><div><span>下一日程</span><strong>${esc(nextBlock ? `${blockTime(nextBlock.startAt, true)} · ${nextBlock.title}` : "尚未排期")}</strong></div></aside></section>${special}<div class="two-col">${section("开放任务", `${tasks.length} 项仍在轨道上`, `<div class="task-list">${tasks.map((task) => taskCard(task, true)).join("") || emptyState("没有开放任务", "如果轨道仍然活跃，补一个最小下一步。")}</div>`)}${section("相关笔记", "用于快速恢复上下文", `<div class="note-list compact">${relatedNotes.slice(0, 6).map(noteRow).join("") || emptyState("暂无关联笔记", "只保存未来值得重新读到的内容。")}</div>`)}</div>`;
 }
 
 function trackViews(item) {
@@ -649,7 +662,7 @@ function renderShell() {
   $("#railStatus").textContent = status.operationalReady ? "运行就绪" : "需要检查";
   $("#railHealth").className = status.operationalReady ? "ready" : "attention";
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
-  $("#navTracks").innerHTML = tracks().slice(0, 7).map((item) => `<button type="button" class="nav-track ${view === "track" && selectedTrackId === item.id ? "active" : ""}" data-track="${esc(item.id)}" title="${esc(item.name)}"><i></i><span>${esc(shortText(navName(item), 18))}</span></button>`).join("");
+  $("#navTracks").innerHTML = tracks().slice(0, 7).map((item) => `<button type="button" class="nav-track ${view === "track" && selectedTrackId === item.id ? "active" : ""}" data-track="${esc(item.id)}" title="${esc(item.name)}" style="--tc:${esc(trackColorHex(item.id))}"><i></i><span>${esc(shortText(navName(item), 18))}</span></button>`).join("");
 }
 
 function render() {
@@ -879,6 +892,8 @@ document.addEventListener("click", async (event) => {
   if (nav) { view = nav.dataset.view; selectedTrackId = ""; closeOverlay(); window.scrollTo(0, 0); render(); return; }
   const trackTarget = event.target.closest("[data-track]");
   if (trackTarget) { view = "track"; selectedTrackId = trackTarget.dataset.track; closeOverlay(); window.scrollTo(0, 0); render(); return; }
+  const editTrack = event.target.closest("[data-edit-track]");
+  if (editTrack) { if (typeof window.openTrackEditor === "function") window.openTrackEditor(editTrack.dataset.editTrack); return; }
   const date = event.target.closest("[data-date]");
   if (date) { selectedDate = date.dataset.date; renderPlan(); return; }
   const weekShift = event.target.closest("[data-week-shift]");
