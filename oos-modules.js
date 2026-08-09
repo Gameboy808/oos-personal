@@ -271,6 +271,10 @@
   .oos-field label{display:block;font-size:12px;opacity:.6;margin-bottom:5px}
   .oos-field input,.oos-field select,.oos-field textarea{width:100%;padding:10px 12px;border:1px solid var(--border-card,rgba(0,0,0,.14));border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:inherit}
   .oos-field textarea{resize:vertical;min-height:60px}
+  .oos-color-row{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}
+  .oos-swatch{width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.12);cursor:pointer;padding:0;transition:transform .12s ease,box-shadow .12s ease;position:relative}
+  .oos-swatch:hover{transform:scale(1.12)}
+  .oos-swatch.active{border-color:#151513;box-shadow:0 0 0 2px #fff,0 0 0 4px #151513}
   .oos-seg{display:flex;gap:8px}
   .oos-seg button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border-card,rgba(0,0,0,.14));background:#fff;cursor:pointer;font-weight:600;font-size:13px}
   .oos-seg button.active{background:#10b981;color:#fff;border-color:#10b981}
@@ -636,15 +640,28 @@
     openTaskForm(selectedGoal);
   }
   function openTrackForm() {
+    const palette = window.TRACK_PALETTE || ["#E5484D","#F76808","#FFB224","#46A758","#12A594","#0091FF","#6564DB","#8E4EC6","#E93D82","#6E7681","#A16207","#0CA5E9"];
+    let existing = [];
+    try { const s = window.__OOS_STATE && window.__OOS_STATE(); existing = (s && s.tracks) || []; } catch (e) {}
+    const defIdx = existing.length % palette.length;
     openModal(`<h3>${t("newFor").tracks}</h3>
       <div class="oos-field"><label>${t("fTrackName")}</label><input id="nfTrackName" placeholder="例如：每天英语口语打卡"></div>
+      <div class="oos-field"><label>颜色（点一个选，之后可改）</label><div class="oos-color-row" id="nfColorRow">${palette.map(function (c, i) { return `<button type="button" class="oos-swatch ${i === defIdx ? "active" : ""}" data-color="${c}" style="background:${c}" aria-label="${c}"></button>`; }).join("")}</div></div>
       <div class="oos-field"><label>${t("fNext")}</label><textarea id="nfTrackNext" placeholder="这条主线要达成的目标 / 为什么重要"></textarea></div>
       <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="nfSubmit">${t("submit")}</button></div>`,
       () => {
+        let color = palette[defIdx];
+        document.querySelectorAll("#nfColorRow .oos-swatch").forEach(function (b) {
+          b.addEventListener("click", function () {
+            color = b.dataset.color;
+            document.querySelectorAll("#nfColorRow .oos-swatch").forEach(function (x) { x.classList.remove("active"); });
+            b.classList.add("active");
+          });
+        });
         document.getElementById("nfSubmit").addEventListener("click", () => {
           const name = document.getElementById("nfTrackName").value.trim();
           if (!name) { toastMsg(t("pleaseTitle")); return; }
-          createTrack({ name, nextAction: document.getElementById("nfTrackNext").value.trim() });
+          createTrack({ name, nextAction: document.getElementById("nfTrackNext").value.trim(), color: color });
           closeModal(); toastMsg(t("trackAdded"));
         });
       });
@@ -768,8 +785,12 @@
   function createTrack(obj) {
     const now = todayIso();
     const id = "track-u" + Date.now();
+    const palette = window.TRACK_PALETTE || ["#E5484D","#F76808","#FFB224","#46A758","#12A594","#0091FF","#6564DB","#8E4EC6","#E93D82","#6E7681","#A16207","#0CA5E9"];
+    let existing = [];
+    try { const s = window.__OOS_STATE && window.__OOS_STATE(); existing = (s && s.tracks) || []; } catch (e) {}
+    const color = obj.color || palette[existing.length % palette.length];
     const track = {
-      id, name: obj.name, navLabel: obj.name, summary: obj.nextAction || "", detail: "",
+      id, name: obj.name, navLabel: obj.name, summary: obj.nextAction || "", detail: "", color,
       archetype: "project", role: "operational", cadenceDays: 7, monitoring: { enabled: true },
       progress: 0, trackType: "project", stage: "新建", nextAction: obj.nextAction || "",
       nextActionDue: "", risk: "low", needsQuestion: "", metric: "", target: "", deadline: "",
@@ -778,6 +799,35 @@
     if (window.stateOps) window.stateOps([{ type: "track.create", track }], t("trackAdded"));
     else console.warn("stateOps unavailable");
   }
+  // 轨道编辑器：改名 + 改色（自定义命名 / 自定义颜色都在这里）
+  function openTrackEditor(id) {
+    let tr = null;
+    try { const s = window.__OOS_STATE && window.__OOS_STATE(); tr = (s && s.tracks && s.tracks.find(function (x) { return x.id === id; })) || null; } catch (e) {}
+    if (!tr) { toastMsg("找不到该轨道"); return; }
+    const palette = window.TRACK_PALETTE || ["#E5484D","#F76808","#FFB224","#46A758","#12A594","#0091FF","#6564DB","#8E4EC6","#E93D82","#6E7681","#A16207","#0CA5E9"];
+    openModal(`<h3>编辑轨道</h3>
+      <div class="oos-field"><label>${t("fTrackName")}</label><input id="etName" value="${esc(tr.name)}"></div>
+      <div class="oos-field"><label>颜色（点一个选）</label><div class="oos-color-row" id="etColorRow">${palette.map(function (c) { return `<button type="button" class="oos-swatch ${c === tr.color ? "active" : ""}" data-color="${c}" style="background:${c}" aria-label="${c}"></button>`; }).join("")}</div></div>
+      <div class="oos-field"><label>${t("fNext")}</label><textarea id="etNext" placeholder="这条主线要达成的目标 / 为什么重要">${esc(tr.nextAction || "")}</textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="etSubmit">保存</button></div>`,
+      function () {
+        let color = tr.color || palette[0];
+        document.querySelectorAll("#etColorRow .oos-swatch").forEach(function (b) {
+          b.addEventListener("click", function () {
+            color = b.dataset.color;
+            document.querySelectorAll("#etColorRow .oos-swatch").forEach(function (x) { x.classList.remove("active"); });
+            b.classList.add("active");
+          });
+        });
+        document.getElementById("etSubmit").addEventListener("click", function () {
+          const name = document.getElementById("etName").value.trim();
+          if (!name) { toastMsg(t("pleaseTitle")); return; }
+          if (window.stateOps) window.stateOps([{ type: "track.update", targetId: id, patch: { name: name, color: color, nextAction: document.getElementById("etNext").value.trim() } }], "轨道已更新");
+          closeModal();
+        });
+      });
+  }
+  window.openTrackEditor = openTrackEditor;
   function createBlock(obj) {
     const id = "block-u" + Date.now();
     const block = {
