@@ -29,6 +29,15 @@
       journalEmpty: "还没有手记", journalPrompt: "点右下角按钮，上传第一张图、写一段文字",
       fJournalTitle: "标题 / 主题", fJournalText: "文字记录", fJournalImages: "图片",
       journalAdded: "手帐已保存",
+      journalTab1: "手帐", journalTab2: "复盘",
+      guideTitle: "新手指南", guideWhat: "手帐 vs 复盘", guideWhatTxt: "手帐：随手存照片、灵感、生活碎片。复盘：每天 5 分钟，把今天的经历变成明天的经验。",
+      guideTpl: "晚间 5 分钟模板", guideTplTxt: "① 心情　② 今天真正做完的　③ 1 个高光　④ 1 个可优化（只写事件）　⑤ 明天最关键的 1 件事",
+      guideBujo: "Bullet Journal 符号", guideBujoTxt: "• 任务　○ 事件　- 笔记　✗ 划掉　★ 重要　用这些符号快速记，不用写长句",
+      guideStreak: "连续打卡", guideStreakTxt: "每天记一次就亮一天。断了一天也没关系，第二天补上就行，别自责。",
+      guideTip: "新手 3 条", guideTipTxt: "1) 先只做晚间，别加晨间。2) 给自己 5 分钟硬上限。3) 不写「我好烂」，只写发生了什么。",
+      reviewTitle: "今日复盘", reviewEmpty: "今晚还没复盘", reviewStart: "开始今晚复盘", reviewDone: "今天已复盘 ✓", reviewEdit: "修改",
+      reviewMood: "心情", reviewKeyword: "今日关键词", reviewDoneList: "今天做完的", reviewHighlight: "一个高光", reviewImprove: "一个可优化", reviewTomorrow: "明天最关键的 1 件事", reviewRapid: "快速记录（Bullet Journal）", reviewSaved: "复盘已保存",
+      streakLabel: "连续复盘", days: "天",
       refresh: "换一批", save: "收藏", addTask: "成稿任务", heat: "热度", peak: "峰值", growth: "涨粉", recreate: "二创建议", viewDouyin: "抖音搜", viewBilibili: "B站搜",
       formTitle: "快速记录", type: "类型", typeTask: "今日 / 待办任务", typeTrack: "长期主线",
       fTitle: "要做什么", fTrack: "归哪条轨道", fTrackName: "主线名称", fDate: "定在哪一天", fNext: "下一步 / 备注", fPriority: "优先级",
@@ -58,6 +67,15 @@
       journalEmpty: "No journal entries yet", journalPrompt: "Tap the button to upload your first image and write a note",
       fJournalTitle: "Title / Theme", fJournalText: "Note", fJournalImages: "Images",
       journalAdded: "Journal saved",
+      journalTab1: "Journal", journalTab2: "Review",
+      guideTitle: "Guide", guideWhat: "Journal vs Review", guideWhatTxt: "Journal: casual photos, ideas, life moments. Review: 5 min daily to turn today into tomorrow's experience.",
+      guideTpl: "Evening 5-min template", guideTplTxt: "1) Mood 2) What you finished 3) One highlight 4) One improvement (events only) 5) Tomorrow's one key thing",
+      guideBujo: "Bullet Journal signs", guideBujoTxt: "• task ○ event - note ✗ done ★ important. Use these to log fast without long sentences.",
+      guideStreak: "Streak", guideStreakTxt: "Log once a day and a day lights up. Miss one? Just resume next day, no guilt.",
+      guideTip: "3 tips", guideTipTxt: "1) Evening only, skip morning. 2) Hard 5-min limit. 3) Don't write 'I'm so bad', just what happened.",
+      reviewTitle: "Today Review", reviewEmpty: "No review yet tonight", reviewStart: "Start tonight review", reviewDone: "Reviewed today ✓", reviewEdit: "Edit",
+      reviewMood: "Mood", reviewKeyword: "Keyword", reviewDoneList: "What got done", reviewHighlight: "One highlight", reviewImprove: "One improvement", reviewTomorrow: "Tomorrow's one key thing", reviewRapid: "Rapid log (Bullet Journal)", reviewSaved: "Review saved",
+      streakLabel: "Streak", days: "days",
       refresh: "Shuffle", save: "Save", addTask: "To task", heat: "Heat", peak: "Peak", growth: "Growth", recreate: "Recreate", viewDouyin: "Search Douyin", viewBilibili: "Search Bilibili",
       formTitle: "Quick Capture", type: "Type", typeTask: "Today / To-do", typeTrack: "Long-term Track",
       fTitle: "What to do", fTrack: "Track", fTrackName: "Track name", fDate: "Due date", fNext: "Next step / note", fPriority: "Priority",
@@ -530,7 +548,7 @@
     if (ctx === "english") return openSentenceForm();
     if (ctx === "social") return openSocialPostForm();
     if (ctx === "inspiration") return openInspirationForm();
-    if (ctx === "journal") return openJournalForm();
+    if (ctx === "journal") return (window.__oosJournalTab === "review") ? openReviewForm() : openJournalForm();
     return openTaskForm();
   }
 
@@ -793,23 +811,112 @@
   loadCustomSentences();
 
   /* ============ 手帐 / Journal 模块 ============ */
-  function renderJournal() {
-    const entries = getJournal().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-    const cards = entries.map(e => {
-      const thumbs = (e.images || []).slice(0, 4).map(src => `<img src="${esc(src)}" class="journal-thumb" loading="lazy" />`).join("");
+  /* ============ 手帐 / Journal 模块（V2+V4 混搭 + 新手指南） ============ */
+  function escAttr(s){ return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function ymd(d){ const z=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate()); }
+  function getReviews(){ return getJournal().filter(e=>e.type==="review"); }
+  function computeStreak(){
+    const set = new Set(getReviews().map(r=>r.date).filter(Boolean));
+    if(!set.size) return 0;
+    let d = new Date();
+    if(!set.has(ymd(d))) d.setDate(d.getDate()-1);
+    let s=0;
+    while(set.has(ymd(d))){ s++; d.setDate(d.getDate()-1); }
+    return s;
+  }
+  function todayDoneText(){
+    try{
+      const st = window.__OOS_STATE && window.__OOS_STATE();
+      if(!st||!st.tasks) return "";
+      const t = todayIso();
+      return st.tasks.filter(x=>x.status==="done"&&((x.due||"").slice(0,10)===t)).map(x=>"• "+x.title).join("\n");
+    }catch(e){ return ""; }
+  }
+  function guideHTML(){
+    return `<div class="oos-guide">
+      <button class="guide-toggle" id="guideToggle" type="button">${t("guideTitle")} <span class="gt-arrow">▾</span></button>
+      <div class="guide-body" id="guideBody">
+        <div class="guide-sec"><b>${t("guideWhat")}</b><p>${t("guideWhatTxt")}</p></div>
+        <div class="guide-sec"><b>${t("guideTpl")}</b><p>${t("guideTplTxt")}</p></div>
+        <div class="guide-sec"><b>${t("guideBujo")}</b><p>${t("guideBujoTxt")}</p></div>
+        <div class="guide-sec"><b>${t("guideStreak")}</b><p>${t("guideStreakTxt")}</p></div>
+        <div class="guide-sec"><b>${t("guideTip")}</b><p>${t("guideTipTxt")}</p></div>
+      </div>
+    </div>`;
+  }
+  function journalGrid(){
+    const entries = getJournal().filter(e=>e.type!=="review").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    if(!entries.length) return `<div class="journal-empty"><strong>${t("journalEmpty")}</strong><p>${t("journalPrompt")}</p></div>`;
+    const cards = entries.map(e=>{
+      const thumbs=(e.images||[]).slice(0,4).map(src=>`<img src="${esc(src)}" class="journal-thumb" loading="lazy">`).join("");
       return `<div class="journal-card" data-journal-id="${esc(e.id)}">
-        <div class="journal-date">${esc(e.date || "")}</div>
-        <div class="journal-card-title">${esc(e.title || "")}</div>
-        <p class="journal-text">${esc(e.text || "").replace(/\n/g, "<br>")}</p>
+        <div class="journal-date">${esc(e.date||"")}</div>
+        <div class="journal-card-title">${esc(e.title||"")}</div>
+        <p class="journal-text">${esc(e.text||"").replace(/\n/g,"<br>")}</p>
         <div class="journal-thumbs">${thumbs}</div>
       </div>`;
     }).join("");
+    return `<div class="journal-grid">${cards}</div>`;
+  }
+  function reviewSection(){
+    const today=todayIso();
+    const ex=getReviews().find(r=>r.date===today);
+    const past=getReviews().filter(r=>r.date!==today);
+    const moods=["😞","🙁","😐","🙂","😄"];
+    let body;
+    if(ex){
+      body=`<div class="review-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <b>${t("reviewDone")}</b>
+          <button class="review-start" style="padding:6px 12px;font-size:12px" id="rvEdit" type="button">${t("reviewEdit")}</button>
+        </div>
+        <div class="review-row"><label>${t("reviewMood")}</label><div class="val">${moods[ex.mood]||""} ${esc(ex.keyword||"")}</div></div>
+        <div class="review-row"><label>${t("reviewDoneList")}</label><div class="val">${esc(ex.done||"").replace(/\n/g,"<br>")}</div></div>
+        <div class="review-row"><label>${t("reviewHighlight")}</label><div class="val">${esc(ex.highlight||"")}</div></div>
+        <div class="review-row"><label>${t("reviewImprove")}</label><div class="val">${esc(ex.improve||"")}</div></div>
+        <div class="review-row"><label>${t("reviewTomorrow")}</label><div class="val">${esc(ex.tomorrow||"")}</div></div>
+        ${ex.rapid?`<div class="review-row"><label>${t("reviewRapid")}</label><div class="val">${esc(ex.rapid).replace(/\n/g,"<br>")}</div></div>`:""}
+      </div>`;
+    } else {
+      body=`<div class="review-card"><p style="font-size:13px;color:#6b7280;margin:0 0 10px">${t("reviewEmpty")}</p><button class="review-start" id="rvStart" type="button">${t("reviewStart")}</button></div>`;
+    }
+    const list = past.length?`<div class="review-list">${past.slice(0,10).map(r=>`<div class="review-item"><b>${esc(r.date)}</b>　${esc(r.highlight||r.keyword||"")}</div>`).join("")}</div>`:"";
+    return body+list;
+  }
+  function renderJournal(){
     return `<div class="mod-wrap">
-      <div class="mod-head"><div><h2>${t("journalTitle")}</h2><p>${t("journalSub")}</p></div></div>
-      ${cards ? `<div class="journal-grid">${cards}</div>` : `<div class="journal-empty"><strong>${t("journalEmpty")}</strong><p>${t("journalPrompt")}</p></div>`}
+      ${guideHTML()}
+      <div class="journal-tabs">
+        <button class="jt active" data-jt="journal" type="button">${t("journalTab1")}</button>
+        <button class="jt" data-jt="review" type="button">${t("journalTab2")}</button>
+        <span class="streak-badge">${t("streakLabel")} <b>${computeStreak()}</b> ${t("days")}</span>
+      </div>
+      <div id="journalPane">${journalGrid()}</div>
+      <div id="reviewPane" style="display:none">${reviewSection()}</div>
     </div>`;
   }
-  function bindJournal() {}
+  function bindJournal(){
+    const wrap=document.getElementById("viewContent");
+    if(!wrap) return;
+    const jt=wrap.querySelectorAll(".journal-tabs .jt");
+    jt.forEach(b=>b.addEventListener("click",()=>{
+      jt.forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      const isR=b.dataset.jt==="review";
+      window.__oosJournalTab=isR?"review":"journal";
+      document.getElementById("journalPane").style.display=isR?"none":"block";
+      document.getElementById("reviewPane").style.display=isR?"block":"none";
+    }));
+    const gt=document.getElementById("guideToggle");
+    if(gt) gt.addEventListener("click",()=>{
+      const g=document.getElementById("guideBody");
+      const hidden=g.style.display==="none";
+      g.style.display=hidden?"block":"none";
+      gt.querySelector(".gt-arrow").textContent=hidden?"▾":"▸";
+    });
+    const rs=document.getElementById("rvStart"); if(rs) rs.addEventListener("click",openReviewForm);
+    const re=document.getElementById("rvEdit"); if(re) re.addEventListener("click",openReviewForm);
+  }
   function openJournalForm() {
     let pendingImages = [];
     openModal(`<h3>${t("newFor").journal}</h3>
@@ -832,13 +939,45 @@
           const title = document.getElementById("njTitle").value.trim();
           if (!title && !pendingImages.length) { toastMsg(t("pleaseTitle")); return; }
           const entry = {
-            id: "journal-u" + Date.now(),
+            id: "journal-u" + Date.now(), type: "journal",
             date: document.getElementById("njDate").value || todayIso(),
             title, text: document.getElementById("njText").value.trim(),
             images: pendingImages, createdAt: new Date().toISOString()
           };
           const list = getJournal(); list.unshift(entry); saveJournal(list);
           closeModal(); toastMsg(t("journalAdded")); switchModule("journal");
+        });
+      });
+  }
+  function openReviewForm(){
+    const today=todayIso();
+    const existing=getReviews().find(r=>r.date===today);
+    const prefill=todayDoneText();
+    const moods=["😞","🙁","😐","🙂","😄"];
+    openModal(`<h3>${t("reviewTitle")}</h3>
+      <div class="oos-field"><label>${t("reviewMood")}</label><div class="mood-row" id="rvMood">
+        ${moods.map((m,i)=>`<button type="button" class="mood-btn${existing&&existing.mood===i?" sel":""}" data-m="${i}">${m}</button>`).join("")}
+      </div></div>
+      <div class="oos-field"><label>${t("reviewKeyword")}</label><input id="rvKw" value="${escAttr(existing?existing.keyword:"")}" placeholder="一个词定调，例如：专注"></div>
+      <div class="oos-field"><label>${t("reviewDoneList")}</label><textarea id="rvDone" rows="3" placeholder="自动带入今天完成的任务">${esc(existing?existing.done:prefill)}</textarea></div>
+      <div class="oos-field"><label>${t("reviewHighlight")}</label><input id="rvHi" value="${escAttr(existing?existing.highlight:"")}" placeholder="小事也行"></div>
+      <div class="oos-field"><label>${t("reviewImprove")}</label><input id="rvIm" value="${escAttr(existing?existing.improve:"")}" placeholder="只写事件"></div>
+      <div class="oos-field"><label>${t("reviewTomorrow")}</label><input id="rvTm" value="${escAttr(existing?existing.tomorrow:"")}" placeholder="明天最关键 1 件"></div>
+      <div class="oos-field"><label>${t("reviewRapid")}</label><textarea id="rvRapid" rows="3" placeholder="• 任务  ○ 事件  - 笔记">${esc(existing?existing.rapid:"")}</textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="rvSubmit">${t("submit")}</button></div>`,
+      () => {
+        let mood=existing?existing.mood:-1;
+        document.querySelectorAll("#rvMood .mood-btn").forEach(b=>b.addEventListener("click",()=>{
+          document.querySelectorAll("#rvMood .mood-btn").forEach(x=>x.classList.remove("sel"));
+          b.classList.add("sel"); mood=+b.dataset.m;
+        }));
+        document.getElementById("rvSubmit").addEventListener("click",()=>{
+          const get=id=>document.getElementById(id).value.trim();
+          const entry={ id:existing?existing.id:("review-u"+Date.now()), type:"review", date:today, mood,
+            keyword:get("rvKw"), done:get("rvDone"), highlight:get("rvHi"), improve:get("rvIm"), tomorrow:get("rvTm"), rapid:get("rvRapid"), createdAt:new Date().toISOString() };
+          const list=getJournal();
+          if(existing){ const i=list.findIndex(x=>x.id===existing.id); list[i]=entry; } else list.unshift(entry);
+          saveJournal(list); closeModal(); toastMsg(t("reviewSaved")); switchModule("journal");
         });
       });
   }
