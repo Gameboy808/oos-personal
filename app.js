@@ -11,6 +11,7 @@ const kindLabel = { focus: "专注", fixed: "固定", routine: "例行", buffer:
 
 let state = null;
 let stateMeta = null;
+window.__OOS_STATE = function () { return state; };
 let view = "today";
 let selectedTrackId = "";
 let selectedDate = "";
