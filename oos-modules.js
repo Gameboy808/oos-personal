@@ -41,6 +41,7 @@
       refresh: "换一批", save: "收藏", addTask: "成稿任务", heat: "热度", peak: "峰值", growth: "涨粉", recreate: "二创建议", viewDouyin: "抖音搜", viewBilibili: "B站搜",
       formTitle: "快速记录", type: "类型", typeTask: "今日 / 待办任务", typeTrack: "长期主线",
       fTitle: "要做什么", fTrack: "归哪条轨道", fTrackName: "主线名称", fDate: "定在哪一天", fNext: "下一步 / 备注", fPriority: "优先级",
+      fStage: "当前阶段", fSummary: "描述 / 一句话说明", fTarget: "目标值", fUnit: "单位", fMetric: "指标名称", editTrack: "编辑轨道", trackUpdated: "轨道已更新",
       fBlockStart: "开始时间", fBlockEnd: "结束时间", fBlockKind: "类型", fBlockNote: "备注",
       kindFocus: "专注", kindFixed: "固定", kindRoutine: "例行", kindBuffer: "缓冲", kindErrand: "外出", kindAdmin: "行政", kindRecovery: "恢复",
       fLesson: "加入课程", fEnglish: "英文句子", fChinese: "中文意思",
@@ -79,6 +80,7 @@
       refresh: "Shuffle", save: "Save", addTask: "To task", heat: "Heat", peak: "Peak", growth: "Growth", recreate: "Recreate", viewDouyin: "Search Douyin", viewBilibili: "Search Bilibili",
       formTitle: "Quick Capture", type: "Type", typeTask: "Today / To-do", typeTrack: "Long-term Track",
       fTitle: "What to do", fTrack: "Track", fTrackName: "Track name", fDate: "Due date", fNext: "Next step / note", fPriority: "Priority",
+      fStage: "Stage", fSummary: "Summary / one-liner", fTarget: "Target value", fUnit: "Unit", fMetric: "Metric name", editTrack: "Edit track", trackUpdated: "Track updated",
       fBlockStart: "Start", fBlockEnd: "End", fBlockKind: "Kind", fBlockNote: "Note",
       kindFocus: "Focus", kindFixed: "Fixed", kindRoutine: "Routine", kindBuffer: "Buffer", kindErrand: "Errand", kindAdmin: "Admin", kindRecovery: "Recovery",
       fLesson: "Lesson", fEnglish: "English sentence", fChinese: "Chinese meaning",
@@ -271,6 +273,8 @@
   .oos-field label{display:block;font-size:12px;opacity:.6;margin-bottom:5px}
   .oos-field input,.oos-field select,.oos-field textarea{width:100%;padding:10px 12px;border:1px solid var(--border-card,rgba(0,0,0,.14));border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:inherit}
   .oos-field textarea{resize:vertical;min-height:60px}
+  .oos-edit-grid{display:grid;grid-template-columns:1fr;gap:0 14px}
+  @media(min-width:560px){.oos-edit-grid{grid-template-columns:1fr 1fr}}
   .oos-color-row{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}
   .oos-swatch{width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.12);cursor:pointer;padding:0;transition:transform .12s ease,box-shadow .12s ease;position:relative}
   .oos-swatch:hover{transform:scale(1.12)}
@@ -805,11 +809,19 @@
     try { const s = window.__OOS_STATE && window.__OOS_STATE(); tr = (s && s.tracks && s.tracks.find(function (x) { return x.id === id; })) || null; } catch (e) {}
     if (!tr) { toastMsg("找不到该轨道"); return; }
     const palette = window.TRACK_PALETTE || ["#E5484D","#F76808","#FFB224","#46A758","#12A594","#0091FF","#6564DB","#8E4EC6","#E93D82","#6E7681","#A16207","#0CA5E9"];
-    openModal(`<h3>编辑轨道</h3>
+    const targetVal = tr.target !== undefined && tr.target !== "" ? tr.target : "";
+    openModal(`<h3>${t("editTrack")}</h3>
       <div class="oos-field"><label>${t("fTrackName")}</label><input id="etName" value="${esc(tr.name)}"></div>
       <div class="oos-field"><label>颜色（点一个选）</label><div class="oos-color-row" id="etColorRow">${palette.map(function (c) { return `<button type="button" class="oos-swatch ${c === tr.color ? "active" : ""}" data-color="${c}" style="background:${c}" aria-label="${c}"></button>`; }).join("")}</div></div>
-      <div class="oos-field"><label>${t("fNext")}</label><textarea id="etNext" placeholder="这条主线要达成的目标 / 为什么重要">${esc(tr.nextAction || "")}</textarea></div>
-      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="etSubmit">保存</button></div>`,
+      <div class="oos-edit-grid">
+        <div class="oos-field"><label>${t("fStage")}</label><input id="etStage" placeholder="例如：记录基线" value="${esc(tr.stage || "")}"></div>
+        <div class="oos-field"><label>${t("fMetric")}</label><input id="etMetric" placeholder="例如：月可投资结余" value="${esc(tr.metric || "")}"></div>
+        <div class="oos-field"><label>${t("fTarget")}</label><input id="etTarget" type="number" step="any" placeholder="8000" value="${esc(typeof targetVal === "number" ? targetVal : (targetVal ? String(targetVal).replace(/[^0-9.\-]/g, "") : ""))}"></div>
+        <div class="oos-field"><label>${t("fUnit")}</label><input id="etUnit" placeholder="元 / km / 篇" value="${esc(tr.unit || tr.metricUnit || "")}"></div>
+      </div>
+      <div class="oos-field"><label>${t("fSummary")}</label><textarea id="etSummary" placeholder="一句话讲清楚这条主线要达成什么">${esc(tr.summary || "")}</textarea></div>
+      <div class="oos-field"><label>${t("fNext")}</label><textarea id="etNext" placeholder="最小下一步是什么 / 为什么重要">${esc(tr.nextAction || "")}</textarea></div>
+      <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="etSubmit">${t("submit")}</button></div>`,
       function () {
         let color = tr.color || palette[0];
         document.querySelectorAll("#etColorRow .oos-swatch").forEach(function (b) {
@@ -822,7 +834,21 @@
         document.getElementById("etSubmit").addEventListener("click", function () {
           const name = document.getElementById("etName").value.trim();
           if (!name) { toastMsg(t("pleaseTitle")); return; }
-          if (window.stateOps) window.stateOps([{ type: "track.update", targetId: id, patch: { name: name, color: color, nextAction: document.getElementById("etNext").value.trim() } }], "轨道已更新");
+          const rawTarget = document.getElementById("etTarget").value.trim();
+          const patch = {
+            name: name,
+            color: color,
+            stage: document.getElementById("etStage").value.trim(),
+            metric: document.getElementById("etMetric").value.trim(),
+            target: rawTarget === "" ? "" : Number(rawTarget),
+            unit: document.getElementById("etUnit").value.trim(),
+            metricUnit: document.getElementById("etUnit").value.trim(),
+            summary: document.getElementById("etSummary").value.trim(),
+            nextAction: document.getElementById("etNext").value.trim(),
+            navLabel: name,
+            lastUpdated: todayIso()
+          };
+          if (window.stateOps) window.stateOps([{ type: "track.update", targetId: id, patch: patch }], t("trackUpdated"));
           closeModal();
         });
       });
