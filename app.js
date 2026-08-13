@@ -16,6 +16,7 @@ let view = "today";
 let selectedTrackId = "";
 let selectedDate = "";
 let editingBlockId = "";
+let selectedNoteId = null;
 let firstFlightStep = 0;
 let conflictRetry = null;
 let majorRetry = null;
@@ -319,7 +320,7 @@ function renderToday() {
   setHero("NOW / CURRENT VECTOR", primary?.title || focus?.title || "今天先守住一个真实动作。", schedule.current ? "当前时间块正在进行。" : schedule.next ? `下一段：${blockTime(schedule.next.startAt, true)}。` : focus ? focus.nextStep || "完成最小可交付动作。" : "没有紧急事项，先做一次轻量检查。");
   $("#pageTitle").textContent = "Today";
   const trackSignals = tracks().map(trackModel).map((item) => ({ item, health: trackHealth(item.id) })).sort((a, b) => ({ stalled: 3, watch: 2, active: 1 }[b.health.status || b.health.health || "active"] - ({ stalled: 3, watch: 2, active: 1 }[a.health.status || a.health.health || "active"]))).slice(0, 3);
-  $("#viewContent").innerHTML = `${healthPanel()}${onboardingStatus() === "completed" ? "" : permanentGuideCard()}<div class="today-grid"><div class="today-command">${todaySequence(primary, tasks)}${hardWindowPanel()}</div><aside class="signal-stack">${attentionPanel(attention)}${section("轨道信号", "优先看需要重新点火的主线", `<div class="signal-list">${trackSignals.map(({ item, health }) => `<button type="button" data-track="${esc(item.id)}"><i class="${esc(health.status || health.health || "active")}"></i><span><strong>${esc(item.name)}</strong><small>${Number.isFinite(health.quietDays) ? `${health.quietDays} 天无动作` : "尚无动作记录"}</small></span><em>${health.unscheduled ? "未排期" : ""}</em></button>`).join("") || emptyState("尚无轨道", "完成 First Flight 后建立第一条轨道。")}</div>`)}</aside></div>${section("最近发生", "只展示已记录的事实", activityFeed(5))}${capturePanel()}${todayClosePanel()}${section("My Tracks", "长期主线保持可见，但不与今天争夺注意力", `<div class="track-grid compact">${tracks().map(trackModel).map((item, index) => trackOverview(item, index)).join("")}</div>${ganttTodayMarkup()}`)}`;
+  $("#viewContent").innerHTML = `${healthPanel()}${onboardingStatus() === "completed" ? "" : permanentGuideCard()}<div class="today-grid"><div class="today-command">${todaySequence(primary, tasks)}${hardWindowPanel()}</div><aside class="signal-stack">${attentionPanel(attention)}${section("轨道信号", "优先看需要重新点火的主线", `<div class="signal-list">${trackSignals.map(({ item, health }) => `<button type="button" data-track="${esc(item.id)}"><i class="${esc(health.status || health.health || "active")}"></i><span><strong>${esc(item.name)}</strong><small>${Number.isFinite(health.quietDays) ? `${health.quietDays} 天无动作` : "尚无动作记录"}</small></span><em>${health.unscheduled ? "未排期" : ""}</em></button>`).join("") || emptyState("尚无轨道", "完成 First Flight 后建立第一条轨道。")}</div>`)}</aside></div>${section("最近发生", "只展示已记录的事实", activityFeed(5))}${capturePanel()}${memoQuickCard()}${todayClosePanel()}${section("My Tracks", "长期主线保持可见，但不与今天争夺注意力", `<div class="track-grid compact">${tracks().map(trackModel).map((item, index) => trackOverview(item, index)).join("")}</div>${ganttTodayMarkup()}`)}`;
 }
 
 function ganttTodayMarkup() {
@@ -370,6 +371,19 @@ function activityFeed(limit) {
 
 function capturePanel() {
   return `<form id="captureForm" class="capture"><div><span class="eyebrow">QUICK CAPTURE</span><strong>灵感、闲言碎语与真实进展</strong></div><select name="kind" aria-label="记录类型"><option value="inspiration">灵感</option><option value="thought">随想</option><option value="progress">进展</option><option value="note">笔记</option></select><select name="relatedGoal" aria-label="关联轨道"><option value="">不关联</option>${tracks().map((item) => `<option value="${esc(item.id)}">${esc(navName(item))}</option>`).join("")}</select><textarea name="text" rows="2" placeholder="先收下来；需要行动时再让 Agent 帮你转成任务。"></textarea><button type="submit">收下</button></form>`;
+}
+
+function memoQuickCard() {
+  return `<div class="today-memo-quick">
+    <div class="today-memo-quick-head"><span class="eyebrow">QUICK MEMO</span><strong>备忘录速记</strong></div>
+    <div class="today-memo-quick-body">
+      <textarea id="todayMemoInput" rows="2" placeholder="随手记一条，保存到备忘录…"></textarea>
+      <div class="today-memo-quick-actions">
+        <button type="button" class="memo-quick-link" data-memo-open>打开备忘录</button>
+        <button type="button" class="memo-quick-save-btn" data-memo-today-save>保存</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 function todayClosePanel() {
@@ -652,15 +666,59 @@ function archetypePanel(archetype, item, health, tasks, milestones, relatedNotes
 }
 
 function noteRow(note) {
-  return `<article><span>${esc(note.date || "")}</span><div><strong>${esc(note.title || "未命名笔记")}</strong><p>${esc(shortText(note.summary || note.body, 90))}</p></div></article>`;
+  const rawTitle = String(note.title || "").trim();
+  const firstLine = (rawTitle || String(note.body || "新备忘录")).split("\n")[0];
+  const restLines = String(note.body || "").split("\n").filter((line, i) => i > 0 && line.trim());
+  const preview = (rawTitle ? restLines : String(note.body || "").split("\n").slice(1)).join("  ");
+  const date = String(note.updatedAt || note.date || "").slice(0, 10);
+  return `<article class="memo-item ${note.pinned ? "pinned" : ""}" data-note-open="${esc(note.id)}">
+    <div class="memo-item-main">
+      <div class="memo-item-head"><strong>${esc(shortText(firstLine || "未命名", 60))}</strong>${note.pinned ? `<i class="memo-pin" title="已置顶">📌</i>` : ""}</div>
+      <span class="memo-date">${esc(date)}</span>
+      <p>${esc(shortText(preview || "暂无更多内容", 90))}</p>
+    </div>
+    <div class="memo-item-actions">
+      <button type="button" class="memo-act" data-note-pin="${esc(note.id)}">${note.pinned ? "取消置顶" : "置顶"}</button>
+      <button type="button" class="memo-act danger" data-note-delete="${esc(note.id)}">删除</button>
+    </div>
+  </article>`;
 }
 
 function renderNotes() {
   const query = $("#searchInput").value.trim().toLowerCase();
-  const filtered = notes().filter((note) => !query || `${note.title} ${note.body} ${list(note.tags).join(" ")}`.toLowerCase().includes(query));
-  setHero("NOTES / CONTEXT", "让值得记住的东西留下路径。", "笔记不是仓库；它们帮助未来的你更快恢复判断。");
-  $("#pageTitle").textContent = "Notes";
-  $("#viewContent").innerHTML = `<div class="notes-layout">${section("全部笔记", `${filtered.length} 条记录`, `<div class="note-list">${filtered.map(noteRow).join("") || emptyState("没有匹配的笔记", "换个关键词，或在右侧写下第一条。")}</div>`)}<form id="noteForm" class="editor-card"><span class="eyebrow">NEW NOTE</span><h2>保存一段可恢复的上下文</h2><label><span>标题</span><input name="title" required maxlength="120"></label><label><span>正文</span><textarea name="body" required rows="7"></textarea></label><label><span>标签</span><input name="tags" placeholder="逗号分隔"></label><label><span>关联轨道</span><select name="relatedGoal"><option value="">不关联</option>${tracks().map((item) => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join("")}</select></label><button type="submit">保存笔记</button></form></div>`;
+  if (selectedNoteId === "__new") { renderNoteEditor(null); return; }
+  if (selectedNoteId) { renderNoteEditor(selectedNoteId); return; }
+  let list = notes().slice();
+  list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+  if (query) list = list.filter((note) => `${note.title} ${note.body} ${list(note.tags).join(" ")}`.toLowerCase().includes(query));
+  setHero("备忘录", "随手记，随时翻。", "任何页面右下角「+ 速记」都能一键记下。");
+  $("#pageTitle").textContent = "备忘录";
+  $("#viewContent").innerHTML = `<div class="memo-layout">
+    <div class="memo-toolbar">
+      <button type="button" class="memo-new" data-note-new>＋ 新建备忘录</button>
+      <span class="memo-count">${list.length} 条</span>
+    </div>
+    <div class="memo-list">${list.map(noteRow).join("") || emptyState("还没有备忘录", "点上方「新建」，或任何页面用右下角「+ 速记」随手记一条。")}</div>
+  </div>`;
+}
+
+function renderNoteEditor(id) {
+  const note = id ? notes().find((item) => item.id === id) : null;
+  if (id && !note) { selectedNoteId = null; renderNotes(); return; }
+  setHero("备忘录", id ? "编辑中" : "新建", "");
+  $("#pageTitle").textContent = id ? "编辑备忘录" : "新建备忘录";
+  $("#viewContent").innerHTML = `<button type="button" class="back-link" data-note-back>← 返回列表</button>
+    <form id="noteForm" class="memo-editor">
+      <input type="hidden" name="id" value="${esc(note ? note.id : "")}">
+      <label class="memo-field"><span>标题（可选，留空则取第一行）</span><input name="title" value="${esc(note ? note.title || "" : "")}" maxlength="120" placeholder="给这条备忘起个名"></label>
+      <textarea name="body" rows="14" placeholder="写点什么…" autofocus>${esc(note ? note.body || "" : "")}</textarea>
+      <label class="memo-field"><span>标签（逗号分隔）</span><input name="tags" value="${esc(note ? list(note.tags).join(", ") : "")}" placeholder="例如：灵感, 待办"></label>
+      <div class="memo-editor-actions">
+        <button type="button" class="memo-act" data-note-pin="${esc(note ? note.id : "")}" ${note ? "" : "disabled"}>${note && note.pinned ? "取消置顶" : "置顶"}</button>
+        <button type="button" class="memo-act danger" data-note-delete="${esc(note ? note.id : "")}" ${note ? "" : "disabled"}>删除</button>
+        <button type="submit" class="memo-save">保存</button>
+      </div>
+    </form>`;
 }
 
 function renderReview() {
@@ -942,6 +1000,34 @@ document.addEventListener("click", async (event) => {
     }
     return;
   }
+  const notePin = event.target.closest("[data-note-pin]");
+  if (notePin && notePin.dataset.notePin) { await stateOps([{ type: "note.pin", targetId: notePin.dataset.notePin }], "已更新置顶。"); renderNotes(); return; }
+  const noteDelete = event.target.closest("[data-note-delete]");
+  if (noteDelete && noteDelete.dataset.noteDelete) {
+    if (confirm("确定删除这条备忘录？删除后无法恢复。")) {
+      await stateOps([{ type: "note.delete", targetId: noteDelete.dataset.noteDelete }], "已删除。");
+      selectedNoteId = null; renderNotes();
+    }
+    return;
+  }
+  const noteNew = event.target.closest("[data-note-new]");
+  if (noteNew) { selectedNoteId = "__new"; renderNotes(); return; }
+  const noteBack = event.target.closest("[data-note-back]");
+  if (noteBack) { selectedNoteId = null; renderNotes(); return; }
+  const noteOpen = event.target.closest("[data-note-open]");
+  if (noteOpen) { selectedNoteId = noteOpen.dataset.noteOpen; renderNotes(); return; }
+  const memoTodaySave = event.target.closest("[data-memo-today-save]");
+  if (memoTodaySave) {
+    const ta = document.getElementById("todayMemoInput");
+    const body = ta ? ta.value.trim() : "";
+    if (!body) { toast("写点什么再保存"); return; }
+    const firstLine = body.split("\n")[0].slice(0, 120);
+    await stateOps([{ type: "note.add", note: { title: firstLine, body } }], "已记到备忘录。");
+    if (ta) ta.value = "";
+    return;
+  }
+  const memoOpen = event.target.closest("[data-memo-open]");
+  if (memoOpen) { view = "notes"; selectedNoteId = null; render(); return; }
   const date = event.target.closest("[data-date]");
   if (date) { selectedDate = date.dataset.date; renderPlan(); return; }
   const weekShift = event.target.closest("[data-week-shift]");
@@ -1052,7 +1138,16 @@ document.addEventListener("submit", async (event) => {
     return;
   }
   if (form.id === "noteForm") {
-    await stateOps([{ type: "note.add", note: { title: data.title, body: data.body, tags: String(data.tags || "").split(/[,，]/).map((item) => item.trim()).filter(Boolean), relatedGoals: data.relatedGoal ? [data.relatedGoal] : [] } }], "笔记已保存。");
+    const noteId = String(data.id || "").trim();
+    const noteObj = { title: String(data.title || "").trim(), body: String(data.body || "").trim(), tags: String(data.tags || "").split(/[,，]/).map((item) => item.trim()).filter(Boolean), relatedGoals: data.relatedGoal ? [data.relatedGoal] : [] };
+    if (noteId) {
+      await stateOps([{ type: "note.update", targetId: noteId, patch: noteObj }], "已保存。");
+      selectedNoteId = noteId;
+    } else {
+      await stateOps([{ type: "note.add", note: noteObj }], "已保存。");
+      selectedNoteId = null;
+    }
+    renderNotes();
     return;
   }
   if (form.id === "reviewForm") {
@@ -1079,6 +1174,32 @@ document.addEventListener("keydown", async (event) => {
 
 document.addEventListener("visibilitychange", () => { if (!document.hidden) checkStateMeta(); });
 window.addEventListener("focus", checkStateMeta);
+
+// 全局速记：任何页面右下角「+ 速记」调用，轻弹窗秒存一条备忘录
+window.openQuickMemo = function () {
+  const root = document.getElementById("overlayRoot");
+  if (!root) return;
+  root.innerHTML = `<div class="memo-quick-overlay"><div class="memo-quick-card">
+    <div class="memo-quick-head"><strong>随手记</strong><button type="button" class="memo-quick-close" aria-label="关闭">×</button></div>
+    <textarea id="memoQuickText" rows="5" placeholder="想到什么直接写…（第一行会作为标题）" autofocus></textarea>
+    <div class="memo-quick-actions"><button type="button" class="memo-quick-cancel">取消</button><button type="button" class="memo-quick-save">保存</button></div>
+  </div></div>`;
+  const overlay = root.querySelector(".memo-quick-overlay");
+  const text = root.querySelector("#memoQuickText");
+  const close = () => { root.innerHTML = ""; };
+  overlay.addEventListener("click", (event) => { if (event.target === overlay) close(); });
+  root.querySelector(".memo-quick-close").addEventListener("click", close);
+  root.querySelector(".memo-quick-cancel").addEventListener("click", close);
+  root.querySelector(".memo-quick-save").addEventListener("click", async () => {
+    const body = text.value.trim();
+    if (!body) { toast("写点什么再保存吧"); return; }
+    const firstLine = body.split("\n")[0].slice(0, 120);
+    await stateOps([{ type: "note.add", note: { title: firstLine, body } }], "已记下来。");
+    close();
+    if (view === "notes") renderNotes();
+  });
+  text.focus();
+};
 
 load({ offerFirstFlight: false }).then(startLiveSync).catch((error) => {
   $("#viewContent").innerHTML = `<section class="load-error"><span>CONNECTION LOST</span><h2>没有读到 OOS 状态</h2><p>${esc(error.message)}</p><button type="button" onclick="location.reload()">重新连接</button></section>`;
