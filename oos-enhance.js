@@ -38,9 +38,24 @@
     });
   }
 
+  function addMemoFab() {
+    if (document.getElementById("memoFab")) return;
+    var btn = document.createElement("button");
+    btn.id = "memoFab";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "速记备忘录");
+    btn.innerHTML = '<span class="memo-fab-icon" aria-hidden="true">✎</span><span class="memo-fab-label">速记</span>';
+    document.body.appendChild(btn);
+    btn.addEventListener("click", function () {
+      if (typeof window.openQuickMemo === "function") window.openQuickMemo();
+      else if (typeof toast === "function") toast("备忘录模块加载中…");
+    });
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", addFab);
+    document.addEventListener("DOMContentLoaded", function () { addFab(); addMemoFab(); });
   } else {
     addFab();
+    addMemoFab();
   }
 })();
