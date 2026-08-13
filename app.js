@@ -319,7 +319,45 @@ function renderToday() {
   setHero("NOW / CURRENT VECTOR", primary?.title || focus?.title || "今天先守住一个真实动作。", schedule.current ? "当前时间块正在进行。" : schedule.next ? `下一段：${blockTime(schedule.next.startAt, true)}。` : focus ? focus.nextStep || "完成最小可交付动作。" : "没有紧急事项，先做一次轻量检查。");
   $("#pageTitle").textContent = "Today";
   const trackSignals = tracks().map(trackModel).map((item) => ({ item, health: trackHealth(item.id) })).sort((a, b) => ({ stalled: 3, watch: 2, active: 1 }[b.health.status || b.health.health || "active"] - ({ stalled: 3, watch: 2, active: 1 }[a.health.status || a.health.health || "active"]))).slice(0, 3);
-  $("#viewContent").innerHTML = `${healthPanel()}${onboardingStatus() === "completed" ? "" : permanentGuideCard()}<div class="today-grid"><div class="today-command">${todaySequence(primary, tasks)}${hardWindowPanel()}</div><aside class="signal-stack">${attentionPanel(attention)}${section("轨道信号", "优先看需要重新点火的主线", `<div class="signal-list">${trackSignals.map(({ item, health }) => `<button type="button" data-track="${esc(item.id)}"><i class="${esc(health.status || health.health || "active")}"></i><span><strong>${esc(item.name)}</strong><small>${Number.isFinite(health.quietDays) ? `${health.quietDays} 天无动作` : "尚无动作记录"}</small></span><em>${health.unscheduled ? "未排期" : ""}</em></button>`).join("") || emptyState("尚无轨道", "完成 First Flight 后建立第一条轨道。")}</div>`)}</aside></div>${section("最近发生", "只展示已记录的事实", activityFeed(5))}${capturePanel()}${todayClosePanel()}${section("My Tracks", "长期主线保持可见，但不与今天争夺注意力", `<div class="track-grid compact">${tracks().map(trackModel).map((item, index) => trackOverview(item, index)).join("")}</div>`)}`;
+  $("#viewContent").innerHTML = `${healthPanel()}${onboardingStatus() === "completed" ? "" : permanentGuideCard()}<div class="today-grid"><div class="today-command">${todaySequence(primary, tasks)}${hardWindowPanel()}</div><aside class="signal-stack">${attentionPanel(attention)}${section("轨道信号", "优先看需要重新点火的主线", `<div class="signal-list">${trackSignals.map(({ item, health }) => `<button type="button" data-track="${esc(item.id)}"><i class="${esc(health.status || health.health || "active")}"></i><span><strong>${esc(item.name)}</strong><small>${Number.isFinite(health.quietDays) ? `${health.quietDays} 天无动作` : "尚无动作记录"}</small></span><em>${health.unscheduled ? "未排期" : ""}</em></button>`).join("") || emptyState("尚无轨道", "完成 First Flight 后建立第一条轨道。")}</div>`)}</aside></div>${section("最近发生", "只展示已记录的事实", activityFeed(5))}${capturePanel()}${todayClosePanel()}${section("My Tracks", "长期主线保持可见，但不与今天争夺注意力", `<div class="track-grid compact">${tracks().map(trackModel).map((item, index) => trackOverview(item, index)).join("")}</div>${ganttTodayMarkup()}`)}`;
+}
+
+function ganttTodayMarkup() {
+  const today = todayIso();
+  const START = TIMELINE_START, END = TIMELINE_END, total = END - START;
+  const dayBlocks = activeBlocks().filter((b) => blockDate(b) === today).sort((a, b) => blockStart(a) - blockStart(b));
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const within = nowMin >= START && nowMin <= END;
+  const nowPct = ((nowMin - START) / total) * 100;
+  const hours = [];
+  for (let h = Math.ceil(START / 60); h <= END / 60; h += 1) hours.push(h);
+  const scaleHtml = `<div class="gantt-scale"><div class="gantt-scale-spacer"></div><div class="gantt-scale-track">${
+    hours.map((h) => `<span class="gantt-hour" style="left:${((h * 60 - START) / total) * 100}%">${String(h).padStart(2, "0")}:00</span>`).join("")
+  }${within ? `<i class="gantt-now-head" style="left:${nowPct}%">现在</i>` : ""}</div></div>`;
+  const rows = dayBlocks.map((b) => {
+    const range = blockMinutes(b);
+    if (range.start === null) return "";
+    const s = Math.max(START, range.start), e = Math.min(END, range.end);
+    const left = ((s - START) / total) * 100;
+    const width = Math.max(2.5, ((e - s) / total) * 100);
+    const color = trackColorHex(b.goal);
+    const ongoing = within && nowMin >= range.start && nowMin < range.end;
+    const tName = trackName(b.goal);
+    const startL = minuteLabel(range.start), endL = minuteLabel(range.end);
+    const titleTxt = b.title + " · " + startL + "—" + endL + " · " + tName;
+    return `<div class="gantt-row">
+      <div class="gantt-label"><i style="background:${color}"></i><span>${esc(shortText(b.title || "未命名", 16))}</span><small>${startL}</small></div>
+      <div class="gantt-track">
+        ${within ? `<i class="gantt-now" style="left:${nowPct}%"></i>` : ""}
+        <button type="button" class="gantt-bar ${ongoing ? "ongoing" : ""}" style="left:${left}%;width:${width}%;--bc:${color}" data-block-edit="${esc(b.id)}" title="${esc(titleTxt)}"><em>${esc(tName)}</em><span>${startL}–${endL}</span></button>
+      </div>
+    </div>`;
+  }).join("");
+  const scheduledTaskIds = new Set(dayBlocks.map((b) => b.taskId).filter(Boolean));
+  const unscheduled = openTasks().filter((t) => t.due === today && !scheduledTaskIds.has(t.id));
+  const unscheduledHtml = unscheduled.length ? `<div class="gantt-unscheduled"><span class="eyebrow">未排期 · 今天到期</span><div class="gantt-chip-row">${unscheduled.map((t) => `<span class="gantt-chip" style="--bc:${trackColorHex(t.goal)}"><i></i>${esc(shortText(t.title, 22))}</span>`).join("")}</div></div>` : "";
+  return section("今日时间分布", "甘特图 · 今天几点到几点做什么，按轨道颜色区分", `${scaleHtml}<div class="gantt">${rows || `<div class="gantt-empty">今天还没有安排时间块。去 Plan 视图拖动安排，这里就会出现你的甘特图。</div>`}</div>${unscheduledHtml}`, "gantt-panel");
 }
 
 function activityFeed(limit) {
