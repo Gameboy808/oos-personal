@@ -68,6 +68,15 @@
       if (local.onboarding.firstFlight.status) b.onboarding.firstFlight.status = local.onboarding.firstFlight.status;
       if (local.onboarding.firstFlight.currentStep != null) b.onboarding.firstFlight.currentStep = local.onboarding.firstFlight.currentStep;
     }
+    if (Array.isArray(b.notes) && b.notes.length) {
+      var noteChanged = false;
+      b.notes.forEach(function (n, i) {
+        if (!n.id) { n.id = "note-" + i + "-" + Date.now().toString(36); noteChanged = true; }
+        if (!n.updatedAt) { n.updatedAt = n.createdAt || n.date || (local && local.__updatedAt) || new Date().toISOString(); noteChanged = true; }
+        if (typeof n.pinned !== "boolean") { n.pinned = false; }
+      });
+      if (noteChanged) saveLocal(b);
+    }
     return b;
   }
 
@@ -158,6 +167,32 @@
               state.logs.metrics = state.logs.metrics || [];
               state.logs.metrics.push(rec);
             }
+          }
+          break;
+        case "note.add":
+          if (op.note) {
+            var nn = op.note;
+            nn.id = nn.id || ("note-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1e4).toString(36));
+            nn.createdAt = nn.createdAt || new Date().toISOString();
+            nn.updatedAt = nn.updatedAt || nn.createdAt;
+            if (typeof nn.pinned !== "boolean") nn.pinned = false;
+            state.notes = state.notes || [];
+            state.notes.unshift(nn);
+          }
+          break;
+        case "note.update":
+          if (op.targetId && op.patch) {
+            var nUpd = (state.notes || []).find(function (x) { return x.id === op.targetId; });
+            if (nUpd) { Object.assign(nUpd, op.patch); nUpd.updatedAt = new Date().toISOString(); }
+          }
+          break;
+        case "note.delete":
+          if (op.targetId) { state.notes = (state.notes || []).filter(function (x) { return x.id !== op.targetId; }); }
+          break;
+        case "note.pin":
+          if (op.targetId) {
+            var nPin = (state.notes || []).find(function (x) { return x.id === op.targetId; });
+            if (nPin) { nPin.pinned = !nPin.pinned; nPin.updatedAt = new Date().toISOString(); }
           }
           break;
         case "onboarding.advance":
