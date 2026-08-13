@@ -465,4 +465,60 @@ h1, h2, h3, p { margin-top: 0; }
 .gantt-chip i { width:8px; height:8px; border-radius:50%; background:var(--bc, var(--accent)); }
 @media(min-width:560px){ .gantt-panel .gantt-scale, .gantt-panel .gantt-row { grid-template-columns:172px 1fr; } }
 
+/* ===== 备忘录 (iPhone 风格) ===== */
+.memo-layout { display:flex; flex-direction:column; gap:14px; }
+.memo-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.memo-new { padding:9px 18px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:#fff; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(var(--accent-rgb),.28); }
+.memo-new:hover { filter:brightness(1.08); }
+.memo-count { color:var(--muted); font-size:12px; font-weight:600; }
+.memo-list { display:flex; flex-direction:column; gap:8px; }
+.memo-item { display:flex; align-items:stretch; gap:10px; padding:14px 16px; border:1px solid var(--line); border-radius:14px; background:var(--paper); cursor:pointer; transition:border-color .15s ease,box-shadow .15s ease; }
+.memo-item:hover { border-color:var(--accent); box-shadow:0 6px 18px rgba(var(--accent-rgb),.1); }
+.memo-item.pinned { border-color:rgba(var(--accent-rgb),.4); background:color-mix(in srgb,var(--accent) 5%,var(--paper)); }
+.memo-item-main { flex:1; min-width:0; }
+.memo-item-head { display:flex; align-items:center; gap:6px; }
+.memo-item-head strong { font-size:15px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.memo-pin { font-style:normal; }
+.memo-date { display:block; margin:2px 0 4px; font-size:11px; color:var(--muted); }
+.memo-item-main p { margin:0; font-size:13px; color:#8d8a83; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.memo-item-actions { display:flex; flex-direction:column; gap:6px; justify-content:center; }
+.memo-act { padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.memo-act:hover { border-color:var(--accent); color:var(--ink); }
+.memo-act.danger { color:#e45756; border-color:rgba(228,87,86,.35); }
+.memo-act.danger:hover { background:#e45756; color:#fff; border-color:#e45756; }
+.memo-act:disabled { opacity:.4; cursor:not-allowed; }
+.memo-editor { display:flex; flex-direction:column; gap:14px; max-width:680px; }
+.memo-field { display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted); font-weight:600; }
+.memo-field input { padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:15px; }
+.memo-editor textarea { padding:14px; border:1px solid var(--line); border-radius:12px; font-size:15px; line-height:1.7; resize:vertical; min-height:200px; font-family:inherit; }
+.memo-editor-actions { display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-wrap:wrap; }
+.memo-save { padding:9px 22px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:#fff; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(var(--accent-rgb),.28); }
+.memo-save:hover { filter:brightness(1.08); }
+/* 全局速记 FAB */
+#memoFab { position:fixed; right:24px; bottom:92px; z-index:60; display:inline-flex; align-items:center; gap:7px; padding:11px 18px; border:none; border-radius:30px; background:var(--ink,#2b2a27); color:#fff; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,.22); transition:transform .15s ease,box-shadow .15s ease; }
+#memoFab:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.28); }
+#memoFab .memo-fab-icon { font-size:15px; }
+@media (max-width:600px){ #memoFab { bottom:84px; right:16px; } }
+/* 速记弹窗 */
+.memo-quick-overlay { position:fixed; inset:0; z-index:80; display:flex; align-items:flex-end; justify-content:center; background:rgba(20,19,17,.4); padding:18px; }
+.memo-quick-card { width:100%; max-width:520px; background:var(--paper); border-radius:18px 18px 0 0; padding:18px; box-shadow:0 -10px 40px rgba(0,0,0,.25); display:flex; flex-direction:column; gap:12px; }
+@media(min-width:560px){ .memo-quick-overlay { align-items:center; } .memo-quick-card { border-radius:18px; } }
+.memo-quick-head { display:flex; align-items:center; justify-content:space-between; }
+.memo-quick-head strong { font-size:16px; }
+.memo-quick-close { border:none; background:none; font-size:22px; line-height:1; color:var(--muted); cursor:pointer; }
+.memo-quick-card textarea { width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; font-size:15px; line-height:1.6; resize:vertical; font-family:inherit; }
+.memo-quick-actions { display:flex; gap:10px; justify-content:flex-end; }
+.memo-quick-cancel { padding:9px 16px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; }
+.memo-quick-save { padding:9px 20px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
+/* Today 备忘录速记卡片 */
+.today-memo-quick { border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); padding:16px 18px; }
+.today-memo-quick-head { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+.today-memo-quick-head .eyebrow { font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--accent); }
+.today-memo-quick-head strong { font-size:15px; }
+.today-memo-quick-body textarea { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; line-height:1.5; resize:vertical; font-family:inherit; }
+.today-memo-quick-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
+.memo-quick-link { padding:7px 14px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; }
+.memo-quick-link:hover { border-color:var(--accent); color:var(--ink); }
+.memo-quick-save-btn { padding:7px 18px; border:1px solid var(--accent); border-radius:9px; background:var(--accent); color:#fff; font-size:12px; font-weight:700; cursor:pointer; }
+
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important; } }
