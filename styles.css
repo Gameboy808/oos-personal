@@ -433,4 +433,32 @@ h1, h2, h3, p { margin-top: 0; }
   .first-flight { width:calc(100vw - 16px);max-height:calc(100vh - 16px);min-height:0;grid-template-columns:1fr;overflow:auto; }.first-flight > aside { padding:18px 20px; }.flight-mark,.first-flight > aside > h2 { display:none; }.flight-progress { grid-template-columns:repeat(5,1fr);margin-top:10px; }.flight-progress button { min-height:38px;grid-template-columns:28px 1fr;padding:4px; }.flight-progress button span { display:none; }.first-flight .skip { position:absolute;z-index:2;top:17px;right:20px;margin:0; }.first-flight > main { min-height:440px;padding:28px 22px 22px; }.first-flight > main h2 { font-size:25px; }.flight-mini-route { margin:15px 0; }.field-pair { grid-template-columns:1fr; }
 }
 
+/* 今日甘特图 */
+.gantt-panel .gantt-scale, .gantt-panel .gantt-row { display:grid; grid-template-columns:148px 1fr; gap:14px; align-items:center; }
+.gantt-scale { margin-bottom:4px; }
+.gantt-scale-track { position:relative; height:18px; }
+.gantt-hour { position:absolute; transform:translateX(-50%); font-size:10px; color:var(--faint); font-family:"Bahnschrift",sans-serif; top:0; }
+.gantt-hour::before { content:""; position:absolute; left:50%; top:15px; width:1px; height:6px; background:var(--line); }
+.gantt-now-head { position:absolute; top:0; transform:translateX(-50%); background:var(--danger); color:#fff; font-size:9px; font-weight:700; padding:1px 6px; border-radius:6px; white-space:nowrap; z-index:4; }
+.gantt { position:relative; display:grid; gap:8px; padding:2px 0; }
+.gantt-label { display:flex; align-items:center; gap:7px; min-width:0; }
+.gantt-label i { width:9px; height:9px; border-radius:50%; flex:none; box-shadow:0 0 0 2px rgba(255,255,255,.6); }
+.gantt-label span { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gantt-label small { margin-left:auto; font-size:10px; color:var(--faint); font-family:"Bahnschrift",sans-serif; }
+.gantt-track { position:relative; height:34px; background:rgba(var(--accent-rgb),.025); border-radius:8px; overflow:hidden; }
+.gantt-track::before { content:""; position:absolute; inset:0; background-image:linear-gradient(90deg, var(--line), var(--line)); background-size:5.882% 100%; background-repeat:repeat-x; opacity:.4; pointer-events:none; }
+.gantt-bar { position:absolute; top:4px; bottom:4px; border-radius:7px; border:none; cursor:pointer; padding:0 9px; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; overflow:hidden; text-align:left; color:#fff; background:var(--bc, var(--accent)); box-shadow:0 2px 8px rgba(0,0,0,.16); transition:filter .12s ease, transform .12s ease; min-width:0; }
+.gantt-bar em { font-style:normal; font-size:9px; opacity:.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+.gantt-bar span { font-size:10px; font-weight:700; font-family:"Bahnschrift",sans-serif; white-space:nowrap; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+.gantt-bar:hover { filter:brightness(1.07); transform:translateY(-1px); }
+.gantt-bar.ongoing { box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--bc, var(--accent)), 0 4px 12px rgba(0,0,0,.22); }
+.gantt-now { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--danger); z-index:3; pointer-events:none; }
+.gantt-now::after { content:""; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:7px; height:7px; border-radius:50%; background:var(--danger); }
+.gantt-empty { color:var(--muted); font-size:13px; padding:20px 4px; text-align:center; }
+.gantt-unscheduled { margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
+.gantt-chip-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:7px; }
+.gantt-chip { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:5px 11px; border-radius:20px; background:color-mix(in srgb, var(--bc, var(--accent)) 13%, #fff); color:var(--ink); }
+.gantt-chip i { width:8px; height:8px; border-radius:50%; background:var(--bc, var(--accent)); }
+@media(min-width:560px){ .gantt-panel .gantt-scale, .gantt-panel .gantt-row { grid-template-columns:172px 1fr; } }
+
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important; } }
