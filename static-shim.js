@@ -134,6 +134,32 @@
             if (g2) Object.assign(g2, op.patch);
           }
           break;
+        case "track.delete":
+          if (op.targetId) {
+            state.tracks = (state.tracks || []).filter(function (x) { return x.id !== op.targetId; });
+            state.goals = (state.goals || []).filter(function (x) { return x.id !== op.targetId; });
+            if (Array.isArray(state.scheduleBlocks)) state.scheduleBlocks = state.scheduleBlocks.filter(function (x) { return x.goal !== op.targetId && x.trackId !== op.targetId; });
+            if (Array.isArray(state.tasks)) state.tasks = state.tasks.filter(function (x) { return x.goal !== op.targetId && x.trackId !== op.targetId; });
+          }
+          break;
+        case "metric.record":
+          if (op.trackId && op.entry) {
+            var t3 = (state.tracks || []).find(function (x) { return x.id === op.trackId; });
+            var targetView = null;
+            if (t3 && Array.isArray(t3.views)) {
+              targetView = t3.views.find(function (v) { return ["trend-line", "line", "trend", "metric"].indexOf(String(v.type || v.kind || "").toLowerCase()) !== -1; });
+            }
+            var rec = { value: op.entry.value, date: op.entry.date || new Date().toISOString().slice(0, 10), note: op.entry.note || "", metricKey: op.metricKey || op.viewId || "value", trackId: op.trackId };
+            if (targetView) {
+              targetView.entries = Array.isArray(targetView.entries) ? targetView.entries : [];
+              targetView.entries.push(rec);
+            } else {
+              state.logs = state.logs || {};
+              state.logs.metrics = state.logs.metrics || [];
+              state.logs.metrics.push(rec);
+            }
+          }
+          break;
         case "onboarding.advance":
           if (op.step != null) { state.onboarding = state.onboarding || {}; state.onboarding.firstFlight = state.onboarding.firstFlight || {}; state.onboarding.firstFlight.currentStep = op.step; }
           break;
