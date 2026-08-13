@@ -522,7 +522,7 @@ function renderTrack(id) {
   $("#pageTitle").textContent = navName(item);
   const special = archetypePanel(archetype, item, health, tasks, milestones, relatedNotes);
   const nextBlock = activeBlocks().filter((block) => block.goal === id && block.startAt).sort((left, right) => blockStart(left) - blockStart(right))[0];
-  $("#viewContent").innerHTML = `<button type="button" class="back-link" data-view="tracks">← 返回 Tracks</button><button type="button" class="oos-edit-track" data-edit-track="${esc(id)}">编辑轨道</button><section class="track-hero archetype-${archetype}"><div><span class="eyebrow">${esc(item.role || archetype)} · ${esc(healthLabel[health.status] || health.status || "活跃")}</span><h2>${esc(item.name)}</h2><p>${esc(item.summary || item.nextAction || "下一步待补充。")}</p></div><aside class="track-summary-metrics"><div><span>当前阶段</span><strong>${esc(item.stage || "待补充")}</strong></div><div><span>下一动作</span><strong>${esc(shortText(item.nextAction || "待补充", 70))}</strong></div><div><span>下一日程</span><strong>${esc(nextBlock ? `${blockTime(nextBlock.startAt, true)} · ${nextBlock.title}` : "尚未排期")}</strong></div></aside></section>${special}<div class="two-col">${section("开放任务", `${tasks.length} 项仍在轨道上`, `<div class="task-list">${tasks.map((task) => taskCard(task, true)).join("") || emptyState("没有开放任务", "如果轨道仍然活跃，补一个最小下一步。")}</div>`)}${section("相关笔记", "用于快速恢复上下文", `<div class="note-list compact">${relatedNotes.slice(0, 6).map(noteRow).join("") || emptyState("暂无关联笔记", "只保存未来值得重新读到的内容。")}</div>`)}</div>`;
+  $("#viewContent").innerHTML = `<button type="button" class="back-link" data-view="tracks">← 返回 Tracks</button><div class="track-actions-row"><button type="button" class="oos-edit-track" data-edit-track="${esc(id)}">编辑轨道</button><button type="button" class="oos-edit-track danger" data-delete-track="${esc(id)}">删除轨道</button></div><section class="track-hero archetype-${archetype}"><div><span class="eyebrow">${esc(item.role || archetype)} · ${esc(healthLabel[health.status] || health.status || "活跃")}</span><h2>${esc(item.name)}</h2><p>${esc(item.summary || item.nextAction || "下一步待补充。")}</p></div><aside class="track-summary-metrics"><div><span>当前阶段</span><strong>${esc(item.stage || "待补充")}</strong></div><div><span>下一动作</span><strong>${esc(shortText(item.nextAction || "待补充", 70))}</strong></div><div><span>下一日程</span><strong>${esc(nextBlock ? `${blockTime(nextBlock.startAt, true)} · ${nextBlock.title}` : "尚未排期")}</strong></div></aside></section>${special}<div class="two-col">${section("开放任务", `${tasks.length} 项仍在轨道上`, `<div class="task-list">${tasks.map((task) => taskCard(task, true)).join("") || emptyState("没有开放任务", "如果轨道仍然活跃，补一个最小下一步。")}</div>`)}${section("相关笔记", "用于快速恢复上下文", `<div class="note-list compact">${relatedNotes.slice(0, 6).map(noteRow).join("") || emptyState("暂无关联笔记", "只保存未来值得重新读到的内容。")}</div>`)}</div>`;
 }
 
 function trackViews(item) {
@@ -933,6 +933,15 @@ document.addEventListener("click", async (event) => {
   if (trackTarget) { view = "track"; selectedTrackId = trackTarget.dataset.track; closeOverlay(); window.scrollTo(0, 0); render(); return; }
   const editTrack = event.target.closest("[data-edit-track]");
   if (editTrack) { if (typeof window.openTrackEditor === "function") window.openTrackEditor(editTrack.dataset.editTrack); return; }
+  const deleteTrack = event.target.closest("[data-delete-track]");
+  if (deleteTrack) {
+    const delId = deleteTrack.dataset.deleteTrack;
+    const delName = trackName(delId);
+    if (confirm(`确定删除轨道「${delName}」？\n这会同时删除它的任务、日程和趋势记录，且无法撤销。`)) {
+      stateOps([{ type: "track.delete", targetId: delId }], "轨道已删除。").then(() => { view = "tracks"; selectedTrackId = ""; render(); });
+    }
+    return;
+  }
   const date = event.target.closest("[data-date]");
   if (date) { selectedDate = date.dataset.date; renderPlan(); return; }
   const weekShift = event.target.closest("[data-week-shift]");
