@@ -103,6 +103,66 @@
     state.onboarding.firstFlight.status = status;
   }
 
+  // 把「种子例行」（一次性注入的轨道 + 每日时间块）展开成具体时间块。
+  // 全程用 UTC 做日历运算，避免浏览器时区把日期算偏一天。
+  function expandRoutine(routine, trackId) {
+    if (!routine || !trackId) return [];
+    var out = [];
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    var addDaysISO = function (ds, days) {
+      var p = ds.split("-");
+      var y = parseInt(p[0], 10), m = parseInt(p[1], 10), d = parseInt(p[2], 10);
+      var dt = new Date(Date.UTC(y, m - 1, d));
+      dt.setUTCDate(dt.getUTCDate() + days);
+      return dt.getUTCFullYear() + "-" + pad(dt.getUTCMonth() + 1) + "-" + pad(dt.getUTCDate());
+    };
+    var parts = String(routine.startTime || "22:00").split(":");
+    var sh = parseInt(parts[0], 10) || 22, sm = parseInt(parts[1], 10) || 0;
+    var dur = Number(routine.durationMin) || 45;
+    var total = sh * 60 + sm + dur;
+    var eh = Math.floor(total / 60) % 24, em = total % 60;
+    var skip = Array.isArray(routine.skipWeekdays) ? routine.skipWeekdays : [];
+    var startStr = routine.startDate;
+    var days = Number(routine.days) || 0;
+    for (var i = 0; i < days; i += 1) {
+      var datePart = addDaysISO(startStr, i);
+      var pp = datePart.split("-");
+      var wd = new Date(Date.UTC(parseInt(pp[0], 10), parseInt(pp[1], 10) - 1, parseInt(pp[2], 10))).getUTCDay();
+      if (skip.indexOf(wd) !== -1) continue;
+      var endPart = (total >= 1440) ? addDaysISO(datePart, 1) : datePart;
+      out.push({
+        id: "block-" + trackId + "-" + datePart,
+        taskId: trackId,
+        title: routine.title || "学习",
+        goal: trackId,
+        trackId: trackId,
+        kind: "focus",
+        startAt: datePart + "T" + pad(sh) + ":" + pad(sm) + ":00+08:00",
+        endAt: endPart + "T" + pad(eh) + ":" + pad(em) + ":00+08:00",
+        status: "planned",
+        source: "routine",
+        locked: false,
+        note: routine.note || ""
+      });
+    }
+    return out;
+  }
+
+  // 完成某轨道的每日时间块时，自动给该轨道的趋势视图记一笔「累计学习天数」。
+  function autoRecordTrackMetric(state, blockId) {
+    var blk = findBlock(state, blockId);
+    if (!blk || !blk.trackId) return;
+    var trk = (state.tracks || []).find(function (x) { return x.id === blk.trackId; });
+    if (!trk || !Array.isArray(trk.views)) return;
+    var tv = trk.views.find(function (v) { return String(v.type || "").toLowerCase().indexOf("trend") !== -1; });
+    if (!tv) return;
+    var today = new Date().toISOString().slice(0, 10);
+    tv.entries = Array.isArray(tv.entries) ? tv.entries : [];
+    if (tv.entries.some(function (en) { return en.date === today && en.trackId === blk.trackId; })) return;
+    var done = (state.scheduleBlocks || []).filter(function (b) { return b.trackId === blk.trackId && b.status === "completed"; }).length;
+    tv.entries.push({ value: done, date: today, note: "完成当日学习", metricKey: tv.metric || "value", trackId: blk.trackId });
+  }
+
   // 把 app.js 发来的 ops 应用到状态（覆盖 oos-builder 后端本应做的写操作）
   function applyOps(state, ops) {
     ops = Array.isArray(ops) ? ops : [];
@@ -112,7 +172,10 @@
       switch (op.type) {
         case "task.complete": setTaskStatus(state, id, "done"); break;
         case "task.reopen": setTaskStatus(state, id, "open"); break;
-        case "schedule.complete": setBlockStatus(state, id, "completed"); break;
+        case "schedule.complete":
+          setBlockStatus(state, id, "completed");
+          autoRecordTrackMetric(state, id);
+          break;
         case "schedule.cancel": setBlockStatus(state, id, "cancelled"); break;
         case "schedule.update":
           if (op.patch && id) { var blk = findBlock(state, id); if (blk) Object.assign(blk, op.patch); }
@@ -216,7 +279,28 @@
     return loadBase().then(function (base) {
       var local = getLocal();
       stateCache = mergeState(base, local);
-      localUpdatedAt = (local && local.__updatedAt) || "";
+      var appliedIds = (local && Array.isArray(local.__seeds)) ? local.__seeds.slice() : [];
+      var seedChanged = false;
+      if (Array.isArray(stateCache.seeds)) {
+        stateCache.seeds.forEach(function (seed) {
+          if (!seed || !seed.id) return;
+          if (appliedIds.indexOf(seed.id) !== -1) return;
+          if (seed.track) applyOps(stateCache, [{ type: "track.create", track: seed.track }]);
+          var blocks = expandRoutine(seed.routine, seed.track ? seed.track.id : "seed");
+          if (blocks.length) applyOps(stateCache, blocks.map(function (b) { return { type: "schedule.create", block: b }; }));
+          appliedIds.push(seed.id);
+          seedChanged = true;
+        });
+      }
+      if (seedChanged) {
+        if (!local) local = {};
+        local.__seeds = appliedIds;
+        local.__updatedAt = new Date().toISOString();
+        saveLocal(stateCache);
+        localUpdatedAt = local.__updatedAt;
+      } else {
+        localUpdatedAt = (local && local.__updatedAt) || "";
+      }
       return stateCache;
     });
   }
