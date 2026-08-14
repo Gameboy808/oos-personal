@@ -42,6 +42,7 @@
       formTitle: "快速记录", type: "类型", typeTask: "今日 / 待办任务", typeTrack: "长期主线",
       fTitle: "要做什么", fTrack: "归哪条轨道", fTrackName: "主线名称", fDate: "定在哪一天", fNext: "下一步 / 备注", fPriority: "优先级",
       fStage: "当前阶段", fSummary: "描述 / 一句话说明", fTarget: "目标值", fUnit: "单位", fMetric: "指标名称", editTrack: "编辑轨道", trackUpdated: "轨道已更新",
+      fVisionImage: "愿景图 / 激励图", fVisionImageHint: "像 Notion 封面一样，放一张能提醒你「为什么做这件事」的图片", addImage: "添加图片", changeImage: "更换图片", removeImage: "删除图片", imageTooLarge: "图片压缩后仍超过 300KB，请换一张小图",
       fBlockStart: "开始时间", fBlockEnd: "结束时间", fBlockKind: "类型", fBlockNote: "备注",
       kindFocus: "专注", kindFixed: "固定", kindRoutine: "例行", kindBuffer: "缓冲", kindErrand: "外出", kindAdmin: "行政", kindRecovery: "恢复",
       fLesson: "加入课程", fEnglish: "英文句子", fChinese: "中文意思",
@@ -81,6 +82,7 @@
       formTitle: "Quick Capture", type: "Type", typeTask: "Today / To-do", typeTrack: "Long-term Track",
       fTitle: "What to do", fTrack: "Track", fTrackName: "Track name", fDate: "Due date", fNext: "Next step / note", fPriority: "Priority",
       fStage: "Stage", fSummary: "Summary / one-liner", fTarget: "Target value", fUnit: "Unit", fMetric: "Metric name", editTrack: "Edit track", trackUpdated: "Track updated",
+      fVisionImage: "Vision / cover image", fVisionImageHint: "Like a Notion cover: a picture that reminds you why this track matters", addImage: "Add image", changeImage: "Change image", removeImage: "Remove image", imageTooLarge: "Image still over 300KB after compression. Please use a smaller one.",
       fBlockStart: "Start", fBlockEnd: "End", fBlockKind: "Kind", fBlockNote: "Note",
       kindFocus: "Focus", kindFixed: "Fixed", kindRoutine: "Routine", kindBuffer: "Buffer", kindErrand: "Errand", kindAdmin: "Admin", kindRecovery: "Recovery",
       fLesson: "Lesson", fEnglish: "English sentence", fChinese: "Chinese meaning",
@@ -287,6 +289,13 @@
   .oos-btn-primary{background:#10b981;color:#fff}
   .oos-btn-primary:hover{filter:brightness(1.05)}
   .oos-btn-ghost{background:rgba(0,0,0,.06)}
+  .oos-btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;border-radius:9px;border:1px solid var(--border-card,rgba(0,0,0,.14));background:#fff;cursor:pointer;font-size:12px;font-weight:600;transition:.15s}
+  .oos-btn-secondary:hover{border-color:#10b981;color:#10b981}
+  .oos-file-label{cursor:pointer}
+  .oos-field-hint{margin:0 0 8px;color:#777;font-size:11px;line-height:1.45}
+  .oos-vision-box{display:grid;gap:10px;padding:12px;border:1px dashed var(--border-card,rgba(0,0,0,.18));border-radius:12px;background:rgba(0,0,0,.02)}
+  .oos-vision-box img{width:100%;max-height:180px;object-fit:cover;border-radius:10px;background:#f0f0f0}
+  .oos-vision-actions{display:flex;gap:8px;flex-wrap:wrap}
   .track-new-btn{margin-left:auto;padding:7px 13px;border-radius:9px;background:#10b981;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer}
   .nav-tracks-header{display:flex;align-items:center;justify-content:space-between;padding:0 8px 5px;color:#77746f;font-size:9px;letter-spacing:.085em;text-transform:uppercase}
   .nav-tracks-header button{padding:3px 7px;border-radius:5px;background:rgba(255,255,255,.1);color:#c7c4bd;border:none;font-size:10px;cursor:pointer}
@@ -798,7 +807,7 @@
       archetype: "project", role: "operational", cadenceDays: 7, monitoring: { enabled: true },
       progress: 0, trackType: "project", stage: "新建", nextAction: obj.nextAction || "",
       nextActionDue: "", risk: "low", needsQuestion: "", metric: "", target: "", deadline: "",
-      lastUpdated: now, views: [], checkpoints: []
+      lastUpdated: now, views: [], checkpoints: [], visionImage: ""
     };
     if (window.stateOps) window.stateOps([{ type: "track.create", track }], t("trackAdded"));
     else console.warn("stateOps unavailable");
@@ -810,9 +819,21 @@
     if (!tr) { toastMsg("找不到该轨道"); return; }
     const palette = window.TRACK_PALETTE || ["#E5484D","#F76808","#FFB224","#46A758","#12A594","#0091FF","#6564DB","#8E4EC6","#E93D82","#6E7681","#A16207","#0CA5E9"];
     const targetVal = tr.target !== undefined && tr.target !== "" ? tr.target : "";
+    const hasVision = Boolean(tr.visionImage);
     openModal(`<h3>${t("editTrack")}</h3>
       <div class="oos-field"><label>${t("fTrackName")}</label><input id="etName" value="${esc(tr.name)}"></div>
       <div class="oos-field"><label>颜色（点一个选）</label><div class="oos-color-row" id="etColorRow">${palette.map(function (c) { return `<button type="button" class="oos-swatch ${c === tr.color ? "active" : ""}" data-color="${c}" style="background:${c}" aria-label="${c}"></button>`; }).join("")}</div></div>
+      <div class="oos-field">
+        <label>${t("fVisionImage")}</label>
+        <p class="oos-field-hint">${t("fVisionImageHint")}</p>
+        <div class="oos-vision-box" id="etVisionBox">
+          ${hasVision ? `<img id="etVisionPreview" src="${esc(tr.visionImage)}" alt="${esc(t("fVisionImage"))}">` : ""}
+          <div class="oos-vision-actions">
+            <label class="oos-btn-secondary oos-file-label"><input type="file" id="etImageFile" accept="image/*" hidden>${hasVision ? t("changeImage") : t("addImage")}</label>
+            ${hasVision ? `<button type="button" class="oos-btn-ghost" id="etRemoveImage">${t("removeImage")}</button>` : ""}
+          </div>
+        </div>
+      </div>
       <div class="oos-edit-grid">
         <div class="oos-field"><label>${t("fStage")}</label><input id="etStage" placeholder="例如：记录基线" value="${esc(tr.stage || "")}"></div>
         <div class="oos-field"><label>${t("fMetric")}</label><input id="etMetric" placeholder="例如：月可投资结余" value="${esc(tr.metric || "")}"></div>
@@ -824,6 +845,34 @@
       <div class="oos-modal-actions"><button class="oos-btn-ghost" data-close>${t("cancel")}</button><button class="oos-btn-primary" id="etSubmit">${t("submit")}</button></div>`,
       function () {
         let color = tr.color || palette[0];
+        let visionImage = tr.visionImage || "";
+        function renderVisionActions() {
+          const box = document.getElementById("etVisionBox");
+          if (!box) return;
+          const has = Boolean(visionImage);
+          box.innerHTML = (has ? `<img id="etVisionPreview" src="${esc(visionImage)}" alt="${esc(t("fVisionImage"))}">` : "") +
+            `<div class="oos-vision-actions">` +
+            `<label class="oos-btn-secondary oos-file-label"><input type="file" id="etImageFile" accept="image/*" hidden>${has ? t("changeImage") : t("addImage")}</label>` +
+            (has ? `<button type="button" class="oos-btn-ghost" id="etRemoveImage">${t("removeImage")}</button>` : "") +
+            `</div>`;
+          bindVisionHandlers();
+        }
+        function bindVisionHandlers() {
+          const fileInput = document.getElementById("etImageFile");
+          if (fileInput) {
+            fileInput.addEventListener("change", async function (e) {
+              const file = e.target.files[0];
+              if (!file) return;
+              const dataUrl = await compressImage(file, 1200, 0.82);
+              const bytes = Math.ceil(dataUrl.length * 0.75);
+              if (bytes > 300000) { toastMsg(t("imageTooLarge")); return; }
+              visionImage = dataUrl;
+              renderVisionActions();
+            });
+          }
+          const removeBtn = document.getElementById("etRemoveImage");
+          if (removeBtn) removeBtn.addEventListener("click", function () { visionImage = ""; renderVisionActions(); });
+        }
         document.querySelectorAll("#etColorRow .oos-swatch").forEach(function (b) {
           b.addEventListener("click", function () {
             color = b.dataset.color;
@@ -831,6 +880,7 @@
             b.classList.add("active");
           });
         });
+        bindVisionHandlers();
         document.getElementById("etSubmit").addEventListener("click", function () {
           const name = document.getElementById("etName").value.trim();
           if (!name) { toastMsg(t("pleaseTitle")); return; }
@@ -846,7 +896,8 @@
             summary: document.getElementById("etSummary").value.trim(),
             nextAction: document.getElementById("etNext").value.trim(),
             navLabel: name,
-            lastUpdated: todayIso()
+            lastUpdated: todayIso(),
+            visionImage: visionImage
           };
           if (window.stateOps) window.stateOps([{ type: "track.update", targetId: id, patch: patch }], t("trackUpdated"));
           closeModal();
