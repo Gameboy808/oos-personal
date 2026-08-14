@@ -1213,5 +1213,60 @@
     "entries": [],
     "openRepairs": []
   },
-  "inbox": []
+  "inbox": [],
+  "seeds": [
+    {
+      "id": "comfyui-learning-2026-08",
+      "track": {
+        "id": "comfyui学习",
+        "name": "ComfyUI 学习",
+        "navLabel": "ComfyUI",
+        "summary": "从零基础到精通 ComfyUI 工作流，能独立搭工作流出图/出视频。教程 BV1FuXpBcEuo：https://www.bilibili.com/video/BV1FuXpBcEuo",
+        "detail": "每天 22:30-23:15 跟教程，45 分钟/天，每周 6 天（周日休息）。阶段按标准 ComfyUI 路径拆解，需对照视频微调。",
+        "archetype": "trend",
+        "role": "operational",
+        "cadenceDays": 7,
+        "monitoring": { "enabled": true },
+        "progress": 0,
+        "color": "#7c3aed",
+        "trackType": "trend",
+        "stage": "环境搭建与安装",
+        "nextAction": "看教程第 1 部分：安装 ComfyUI（含依赖/启动器），理解左侧节点库与画布操作",
+        "nextActionDue": "",
+        "risk": "medium",
+        "needsQuestion": "今天这节跟做完，卡在哪一步？",
+        "metric": "累计学习天数",
+        "target": "连续跟完教程，并独立复现 3 个完整工作流（出图 / 换脸 / 视频生成）",
+        "deadline": "",
+        "lastUpdated": "2026-08-14",
+        "views": [
+          {
+            "type": "trend-line",
+            "source": "logs.metrics",
+            "metric": "comfyui-study-days",
+            "unit": "天",
+            "target": 90,
+            "id": "trend-line-comfyui",
+            "label": "ComfyUI 累计学习天数",
+            "entries": []
+          }
+        ],
+        "checkpoints": [
+          { "title": "能独立启动 ComfyUI 并加载默认工作流", "status": "planned", "date": "2026-08-28" },
+          { "title": "跟完基础节点章节，能看懂工作流连线逻辑", "status": "planned", "date": "2026-09-13" },
+          { "title": "独立复现一个 AI 出图工作流", "status": "planned", "date": "2026-10-13" },
+          { "title": "跟完视频生成章节，能出一段 AI 视频", "status": "planned", "date": "2026-11-12" }
+        ]
+      },
+      "routine": {
+        "startDate": "2026-08-14",
+        "days": 180,
+        "skipWeekdays": [0],
+        "startTime": "22:30",
+        "durationMin": 45,
+        "title": "ComfyUI 学习（跟教程 BV1FuXpBcEuo）",
+        "note": "https://www.bilibili.com/video/BV1FuXpBcEuo"
+      }
+    }
+  ]
 }
