@@ -30,7 +30,7 @@ let calendarController = null;
 let lastWorkerResult = null;
 
 const TIMELINE_START = 6 * 60;
-const TIMELINE_END = 23 * 60;
+const TIMELINE_END = 24 * 60;
 const TIMELINE_STEP = 15;
 const TIMELINE_PX_PER_MINUTE = 0.72;
 
