@@ -77,6 +77,16 @@
       });
       if (noteChanged) saveLocal(b);
     }
+    // 合并用户自建的「小狗钱钱」财务数据（固定开支 / 开支记录 / 心愿单），本地优先不被 base 冲掉
+    if (local && local.finance) {
+      b.finance = b.finance || { fixed: [], expenses: [], wishes: [] };
+      ["fixed", "expenses", "wishes"].forEach(function (key) {
+        if (Array.isArray(local.finance[key]) && local.finance[key].length) {
+          var finBaseOnly = (b.finance[key] || []).filter(function (x) { return !local.finance[key].some(function (lx) { return lx && lx.id === x.id; }); });
+          b.finance[key] = local.finance[key].concat(finBaseOnly);
+        }
+      });
+    }
     return b;
   }
 
@@ -258,6 +268,32 @@
             if (nPin) { nPin.pinned = !nPin.pinned; nPin.updatedAt = new Date().toISOString(); }
           }
           break;
+        // 小狗钱钱：固定开支 / 开支记录 / 购物心愿单（collection = fixed | expenses | wishes）
+        case "finance.add":
+          if (op.collection && op.item) {
+            state.finance = state.finance || { fixed: [], expenses: [], wishes: [] };
+            state.finance[op.collection] = state.finance[op.collection] || [];
+            var finItem = op.item;
+            finItem.id = finItem.id || ("fin-" + op.collection + "-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1e4).toString(36));
+            finItem.updatedAt = finItem.updatedAt || new Date().toISOString();
+            state.finance[op.collection].unshift(finItem);
+          }
+          break;
+        case "finance.update":
+          if (op.collection && op.targetId && op.patch) {
+            var finCol = state.finance && state.finance[op.collection];
+            if (finCol) {
+              var finUpd = finCol.find(function (x) { return x.id === op.targetId; });
+              if (finUpd) { Object.assign(finUpd, op.patch); finUpd.updatedAt = new Date().toISOString(); }
+            }
+          }
+          break;
+        case "finance.delete":
+          if (op.collection && op.targetId) {
+            var finCol2 = state.finance && state.finance[op.collection];
+            if (finCol2) state.finance[op.collection] = finCol2.filter(function (x) { return x.id !== op.targetId; });
+          }
+          break;
         case "onboarding.advance":
           if (op.step != null) { state.onboarding = state.onboarding || {}; state.onboarding.firstFlight = state.onboarding.firstFlight || {}; state.onboarding.firstFlight.currentStep = op.step; }
           break;
@@ -340,6 +376,15 @@
     baseCache = null;
     stateCache = null;
     if (typeof load === "function") { load(); }
+  };
+
+  // 块编辑器实时保存：只写回 localStorage，不触发整页重载（避免编辑时丢失光标）
+  window.__OOS_PERSIST = function () {
+    if (stateCache) {
+      stateCache.__updatedAt = new Date().toISOString();
+      localUpdatedAt = stateCache.__updatedAt;
+      saveLocal(stateCache);
+    }
   };
 
   // 桩掉仅用于本地服务的事件流，避免离线报错
