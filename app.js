@@ -20,6 +20,10 @@ let selectedNoteId = null;
 let editingNoteRef = null;
 let financeTab = "guide";
 let persistTimer = null;
+let tracksViewMode = (function () { try { return localStorage.getItem("oos_tracks_view") || "gallery"; } catch (e) { return "gallery"; } })();
+let tracksSort = { key: "name", dir: 1 };
+const TRACK_ARCH_ORDER = ["project", "pipeline", "learning", "habit", "trend", "relationship"];
+const TRACK_ARCH_LABEL = { project: "项目", pipeline: "商业 / 管道", learning: "学习", habit: "习惯", trend: "趋势", relationship: "关系" };
 let firstFlightStep = 0;
 let conflictRetry = null;
 let majorRetry = null;
@@ -509,13 +513,78 @@ function archetypeOf(item) {
   return "project";
 }
 
+function tracksViewSwitch() {
+  const views = [["gallery", "画廊"], ["board", "看板"], ["table", "表格"], ["list", "列表"]];
+  return `<div class="view-switch" role="tablist" aria-label="轨道视图切换">${views.map(([key, label]) => `<button type="button" role="tab" aria-selected="${tracksViewMode === key}" class="view-switch-btn ${tracksViewMode === key ? "active" : ""}" data-track-view="${key}">${label}</button>`).join("")}</div>`;
+}
+
 function renderTracks() {
   const models = tracks().map(trackModel);
   setHero("TRACKS / LONG ARCS", "看见长期旅程，不被任务数量淹没。", "每条轨道只回答四件事：在哪、往哪、下一步、是否还在燃烧。");
   $("#pageTitle").textContent = "Tracks";
   const activeCount = models.filter((item) => ["active", "watch"].includes(trackHealth(item.id).status || "active")).length;
   const stalledCount = models.filter((item) => (trackHealth(item.id).status || "") === "stalled").length;
-  $("#viewContent").innerHTML = `${healthPanel()}<section class="tracks-summary"><div><span class="eyebrow">LONG ARCS</span><h2>长期主线不是任务堆，是持续被看见的方向。</h2><p>每条 Track 都从同一组任务、日程、证据和笔记实时派生。</p></div><dl><div><dt>活跃</dt><dd>${activeCount}</dd></div><div><dt>停滞</dt><dd>${stalledCount}</dd></div><div><dt>总轨道</dt><dd>${models.length}</dd></div></dl></section><section class="track-grid">${models.map((item, index) => trackOverview(item, index)).join("") || emptyState("还没有轨道", "在 First Flight 中定义第一条想长期推进的主线。")}</section>`;
+  const summary = `<section class="tracks-summary"><div><span class="eyebrow">LONG ARCS</span><h2>长期主线不是任务堆，是持续被看见的方向。</h2><p>每条 Track 都从同一组任务、日程、证据和笔记实时派生。</p></div><dl><div><dt>活跃</dt><dd>${activeCount}</dd></div><div><dt>停滞</dt><dd>${stalledCount}</dd></div><div><dt>总轨道</dt><dd>${models.length}</dd></div></dl></section>`;
+  let body;
+  if (tracksViewMode === "board") body = tracksBoard(models);
+  else if (tracksViewMode === "table") body = tracksTable(models);
+  else if (tracksViewMode === "list") body = tracksList(models);
+  else body = `<section class="track-grid">${models.map((item, index) => trackOverview(item, index)).join("") || emptyState("还没有轨道", "在 First Flight 中定义第一条想长期推进的主线。")}</section>`;
+  $("#viewContent").innerHTML = `${healthPanel()}${summary}${tracksViewSwitch()}${body}`;
+}
+
+function tracksBoard(models) {
+  if (!models.length) return emptyState("还没有轨道", "在 First Flight 中定义第一条想长期推进的主线。");
+  return `<div class="track-board" data-board>${TRACK_ARCH_ORDER.map((arch) => {
+    const col = models.filter((item) => archetypeOf(item) === arch);
+    return `<section class="board-col" data-drop-arch="${arch}"><header><span>${TRACK_ARCH_LABEL[arch]}</span><strong>${col.length}</strong></header><div class="board-col-body" data-drop-zone>${col.map(boardCard).join("") || `<p class="lane-empty">把轨道拖到这里</p>`}</div></section>`;
+  }).join("")}<p class="board-hint">拖动卡片可改类型，或在卡片里直接选「类型」。</p></div>`;
+}
+
+function boardCard(item) {
+  const health = trackHealth(item.id);
+  const status = health.status || "active";
+  const progress = Math.max(0, Math.min(100, Number(item.progress) || 0));
+  const opts = TRACK_ARCH_ORDER.map((a) => `<option value="${a}" ${archetypeOf(item) === a ? "selected" : ""}>${TRACK_ARCH_LABEL[a]}</option>`).join("");
+  return `<article class="board-card status-${esc(status)}" draggable="true" data-track="${esc(item.id)}" data-arch="${esc(archetypeOf(item))}"><h3>${esc(item.name)}</h3><p>${esc(shortText(item.nextAction || item.stage || "下一步待补充", 80))}</p><div class="board-card-foot"><span class="mini-progress"><i style="width:${progress}%"></i></span><strong>${progress}%</strong></div><label class="board-type"><span>类型</span><select data-track-set-arch="${esc(item.id)}">${opts}</select></label></article>`;
+}
+
+function tracksTable(models) {
+  if (!models.length) return emptyState("还没有轨道", "在 First Flight 中定义第一条想长期推进的主线。");
+  const cols = [["name", "名称"], ["archetype", "类型"], ["stage", "阶段"], ["progress", "进度"], ["status", "状态"], ["nextAction", "下一步"]];
+  const sorted = [...models].sort((a, b) => {
+    const va = trackSortValue(a, tracksSort.key), vb = trackSortValue(b, tracksSort.key);
+    if (va < vb) return -1 * tracksSort.dir;
+    if (va > vb) return 1 * tracksSort.dir;
+    return 0;
+  });
+  const head = `<tr>${cols.map(([key, label]) => `<th class="${tracksSort.key === key ? "sorted" : ""}" data-track-sort="${key}">${label}${tracksSort.key === key ? `<i class="sort-caret">${tracksSort.dir > 0 ? "▲" : "▼"}</i>` : ""}</th>`).join("")}</tr>`;
+  const rows = sorted.map((item) => {
+    const health = trackHealth(item.id);
+    const status = health.status || "active";
+    const progress = Math.max(0, Math.min(100, Number(item.progress) || 0));
+    return `<tr class="status-${esc(status)}" data-track="${esc(item.id)}"><td class="tt-name">${esc(item.name)}</td><td>${esc(TRACK_ARCH_LABEL[archetypeOf(item)] || archetypeOf(item))}</td><td>${esc(item.stage || "—")}</td><td><span class="mini-progress"><i style="width:${progress}%"></i></span><span class="tt-pct">${progress}%</span></td><td>${esc(healthLabel[status] || status)}</td><td class="tt-next">${esc(shortText(item.nextAction || "—", 60))}</td></tr>`;
+  }).join("");
+  return `<div class="track-table-wrap"><table class="track-table"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function trackSortValue(item, key) {
+  if (key === "progress") return Number(item.progress) || 0;
+  if (key === "archetype") return TRACK_ARCH_LABEL[archetypeOf(item)] || archetypeOf(item);
+  if (key === "stage") return String(item.stage || "");
+  if (key === "status") return trackHealth(item.id).status || "active";
+  if (key === "nextAction") return String(item.nextAction || "");
+  return String(item.name || "");
+}
+
+function tracksList(models) {
+  if (!models.length) return emptyState("还没有轨道", "在 First Flight 中定义第一条想长期推进的主线。");
+  return `<ul class="track-list">${models.map((item, index) => {
+    const health = trackHealth(item.id);
+    const status = health.status || "active";
+    const progress = Math.max(0, Math.min(100, Number(item.progress) || 0));
+    return `<li class="track-list-item status-${esc(status)}" data-track="${esc(item.id)}"><span class="tl-index">${String(index + 1).padStart(2, "0")}</span><span class="tl-name">${esc(item.name)}</span><span class="tl-arch">${esc(TRACK_ARCH_LABEL[archetypeOf(item)] || archetypeOf(item))}</span><span class="tl-stage">${esc(item.stage || "—")}</span><span class="tl-prog"><i style="width:${progress}%"></i></span><strong class="tl-pct">${progress}%</strong></li>`;
+  }).join("")}</ul>`;
 }
 
 function trackOverview(item, index) {
@@ -1190,8 +1259,12 @@ async function keyboardMoveBlock(element, event) {
 document.addEventListener("click", async (event) => {
   const nav = event.target.closest("[data-view]");
   if (nav) { view = nav.dataset.view; selectedTrackId = ""; closeOverlay(); window.scrollTo(0, 0); render(); return; }
+  const trackViewBtn = event.target.closest("[data-track-view]");
+  if (trackViewBtn) { tracksViewMode = trackViewBtn.dataset.trackView; try { localStorage.setItem("oos_tracks_view", tracksViewMode); } catch (e) {} render(); return; }
+  const trackSortBtn = event.target.closest("[data-track-sort]");
+  if (trackSortBtn) { const key = trackSortBtn.dataset.trackSort; if (tracksSort.key === key) tracksSort.dir *= -1; else { tracksSort.key = key; tracksSort.dir = 1; } render(); return; }
   const trackTarget = event.target.closest("[data-track]");
-  if (trackTarget) { view = "track"; selectedTrackId = trackTarget.dataset.track; closeOverlay(); window.scrollTo(0, 0); render(); return; }
+  if (trackTarget && !event.target.closest("select")) { view = "track"; selectedTrackId = trackTarget.dataset.track; closeOverlay(); window.scrollTo(0, 0); render(); return; }
   const editTrack = event.target.closest("[data-edit-track]");
   if (editTrack) { if (typeof window.openTrackEditor === "function") window.openTrackEditor(editTrack.dataset.editTrack); return; }
   const deleteTrack = event.target.closest("[data-delete-track]");
@@ -1312,6 +1385,42 @@ document.addEventListener("dragend", (event) => {
   setTimeout(() => { draggedTaskId = ""; }, 0);
 });
 
+// 轨道看板拖拽：按类型分列，拖卡片改类型（与日程时间轴拖拽互不干扰）
+document.addEventListener("dragstart", (event) => {
+  const card = event.target.closest(".board-card");
+  if (!card) return;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/oos-track", card.dataset.track);
+  event.dataTransfer.setData("text/plain", card.dataset.track);
+  card.classList.add("dragging");
+});
+document.addEventListener("dragend", (event) => {
+  const card = event.target.closest(".board-card");
+  if (card) card.classList.remove("dragging");
+  document.querySelectorAll(".board-col-body.drag-over").forEach((z) => z.classList.remove("drag-over"));
+});
+document.addEventListener("dragover", (event) => {
+  const zone = event.target.closest(".board-col-body");
+  if (!zone) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".board-col-body.drag-over").forEach((z) => { if (z !== zone) z.classList.remove("drag-over"); });
+  zone.classList.add("drag-over");
+});
+document.addEventListener("drop", (event) => {
+  const zone = event.target.closest(".board-col-body");
+  if (!zone) return;
+  event.preventDefault();
+  zone.classList.remove("drag-over");
+  const id = event.dataTransfer.getData("text/oos-track") || event.dataTransfer.getData("text/plain");
+  const col = zone.closest(".board-col");
+  const arch = col && col.dataset.dropArch;
+  if (!id || !arch) return;
+  const item = track(id);
+  if (!item || archetypeOf(item) === arch) return;
+  stateOps([{ type: "track.update", targetId: id, patch: { archetype: arch, trackType: arch } }], `已移到「${TRACK_ARCH_LABEL[arch] || arch}」`).then(() => render());
+});
+
 document.addEventListener("dragover", (event) => {
   const stage = event.target.closest("[data-timeline-dropzone]");
   const types = Array.from(event.dataTransfer.types || []);
@@ -1346,6 +1455,16 @@ document.addEventListener("drop", async (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  const archSel = event.target.closest("select[data-track-set-arch]");
+  if (archSel) {
+    const id = archSel.dataset.trackSetArch;
+    const arch = archSel.value;
+    const item = track(id);
+    if (item && archetypeOf(item) !== arch) {
+      stateOps([{ type: "track.update", targetId: id, patch: { archetype: arch, trackType: arch } }], `类型已改为「${TRACK_ARCH_LABEL[arch] || arch}」`).then(() => render());
+    }
+    return;
+  }
   if (event.target.matches("[data-task]")) stateOps([{ type: event.target.checked ? "task.complete" : "task.reopen", targetId: event.target.dataset.task }], "任务已更新。");
 });
 
