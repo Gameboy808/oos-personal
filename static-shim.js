@@ -87,6 +87,17 @@
         }
       });
     }
+    // 清理历史重复 track / goal（按 id 保留第一条），解决早期种子注入重复导致的侧边栏重复项
+    ["tracks", "goals"].forEach(function (key) {
+      if (!Array.isArray(b[key])) return;
+      var seen = {}, deduped = [];
+      b[key].forEach(function (x) {
+        if (!x || !x.id || seen[x.id]) return;
+        seen[x.id] = true;
+        deduped.push(x);
+      });
+      if (deduped.length !== b[key].length) b[key] = deduped;
+    });
     return b;
   }
 
@@ -200,8 +211,11 @@
           if (op.task) { state.tasks = state.tasks || []; state.tasks.unshift(op.task); }
           break;
         case "track.create":
-          if (op.track) {
-            state.tracks = state.tracks || []; state.tracks.unshift(op.track);
+          if (op.track && op.track.id) {
+            state.tracks = state.tracks || [];
+            if (!state.tracks.some(function (g) { return g.id === op.track.id; })) {
+              state.tracks.unshift(op.track);
+            }
             state.goals = state.goals || [];
             if (!state.goals.some(function (g) { return g.id === op.track.id; })) {
               state.goals.push({ id: op.track.id, name: op.track.name, navLabel: op.track.name, progress: 0, stage: "", nextAction: "", lastUpdated: new Date().toISOString().slice(0, 10), risk: "low", metric: "", archetype: "project", trackType: "project" });
@@ -329,11 +343,10 @@
         });
       }
       if (seedChanged) {
-        if (!local) local = {};
-        local.__seeds = appliedIds;
-        local.__updatedAt = new Date().toISOString();
+        stateCache.__seeds = appliedIds;
+        stateCache.__updatedAt = new Date().toISOString();
         saveLocal(stateCache);
-        localUpdatedAt = local.__updatedAt;
+        localUpdatedAt = stateCache.__updatedAt;
       } else {
         localUpdatedAt = (local && local.__updatedAt) || "";
       }
