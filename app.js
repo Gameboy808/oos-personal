@@ -17,6 +17,9 @@ let selectedTrackId = "";
 let selectedDate = "";
 let editingBlockId = "";
 let selectedNoteId = null;
+let editingNoteRef = null;
+let financeTab = "guide";
+let persistTimer = null;
 let firstFlightStep = 0;
 let conflictRetry = null;
 let majorRetry = null;
@@ -703,23 +706,221 @@ function renderNotes() {
   </div>`;
 }
 
+const BLOCK_TYPES = [
+  { type: "paragraph", label: "正文" },
+  { type: "h1", label: "标题1" },
+  { type: "h2", label: "标题2" },
+  { type: "h3", label: "标题3" },
+  { type: "todo", label: "待办" },
+  { type: "quote", label: "引用" },
+  { type: "callout", label: "提示" },
+  { type: "code", label: "代码" },
+  { type: "divider", label: "分割线" },
+  { type: "image", label: "图片" },
+  { type: "toggle", label: "折叠" }
+];
+
+function ensureNoteBlocks(note) {
+  if (!note) return [];
+  if (!Array.isArray(note.blocks)) {
+    const body = String(note.body || "").replace(/\r/g, "");
+    const lines = body.split("\n").filter((line, i, arr) => !(i === arr.length - 1 && line.trim() === ""));
+    note.blocks = lines.length ? lines.map((line) => ({ type: "paragraph", content: line })) : [{ type: "paragraph", content: "" }];
+  }
+  return note.blocks;
+}
+
+function deriveNoteBody(blocks) {
+  return (blocks || []).map((b) => {
+    if (b.type === "divider") return "";
+    if (b.type === "image") return b.src ? "[图片]" : "";
+    if (b.type === "toggle") return (b.content || "") + (b.children ? "\n" + b.children : "");
+    return b.content || "";
+  }).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function deriveNoteTitle(blocks) {
+  const first = (blocks || []).find((b) => (b.content || b.children || "").trim());
+  const text = first ? (first.content || first.children || "").trim() : "";
+  return text ? text.slice(0, 120) : "新备忘录";
+}
+
+function blockRowMarkup(block, idx) {
+  const t = block.type || "paragraph";
+  const typeLabel = (BLOCK_TYPES.find((b) => b.type === t) || {}).label || "正文";
+  let inner = "";
+  if (t === "divider") {
+    inner = `<div class="nb-divider"><span></span></div>`;
+  } else if (t === "image") {
+    inner = `<div class="nb-image">${block.src ? `<img src="${esc(block.src)}" alt="">` : `<div class="nb-image-empty">还没有图片</div>`}<div class="nb-image-actions"><button type="button" class="nb-mini" data-block-img="${idx}">${block.src ? "更换图片" : "上传图片"}</button>${block.src ? `<button type="button" class="nb-mini danger" data-img-remove="${idx}">删除图片</button>` : ""}</div><input type="file" accept="image/*" hidden data-block-file="${idx}"></div>`;
+  } else if (t === "todo") {
+    inner = `<label class="nb-todo"><input type="checkbox" data-todo-toggle="${idx}" ${block.checked ? "checked" : ""}><textarea data-block-content="${idx}" rows="1" placeholder="待办事项…">${esc(block.content || "")}</textarea></label>`;
+  } else if (t === "toggle") {
+    const open = !block.collapsed;
+    inner = `<div class="nb-toggle ${open ? "open" : ""}"><button type="button" class="nb-toggle-head" data-toggle-collapse="${idx}"><span class="nb-caret">${open ? "▾" : "▸"}</span><textarea data-block-title="${idx}" rows="1" placeholder="折叠标题…">${esc(block.content || "")}</textarea></button>${open ? `<textarea data-block-content="${idx}" rows="2" placeholder="展开后写细节…" class="nb-toggle-body">${esc(block.children || "")}</textarea>` : ""}</div>`;
+  } else {
+    const ph = t === "h1" ? "大标题" : t === "h2" ? "中标题" : t === "h3" ? "小标题" : t === "quote" ? "引用一句话…" : t === "callout" ? "提示 / 强调…" : t === "code" ? "代码…" : "写点什么…";
+    inner = `<textarea data-block-content="${idx}" rows="1" class="nb-text nb-${t}" placeholder="${ph}">${esc(block.content || "")}</textarea>`;
+  }
+  return `<div class="nb-row nb-type-${t}" data-block-index="${idx}">
+    <div class="nb-gutter">
+      <button type="button" class="nb-type-btn" data-block-type="${idx}" title="切换类型">${esc(typeLabel)}</button>
+      <div class="nb-type-menu" data-type-menu="${idx}" hidden>${BLOCK_TYPES.map((b) => `<button type="button" data-set-type="${idx}" data-type="${b.type}">${esc(b.label)}</button>`).join("")}</div>
+    </div>
+    <div class="nb-main">${inner}</div>
+    <div class="nb-ops">
+      <button type="button" class="nb-mini" data-block-up="${idx}" title="上移">↑</button>
+      <button type="button" class="nb-mini" data-block-down="${idx}" title="下移">↓</button>
+      <button type="button" class="nb-mini danger" data-block-del="${idx}" title="删除">✕</button>
+    </div>
+  </div>`;
+}
+
+function rerenderNoteBlocks(note) {
+  const nb = $("#noteBlocks");
+  if (!nb) return;
+  nb.innerHTML = note.blocks.map(blockRowMarkup).join("") + `<button type="button" class="nb-add" data-block-add="${note.blocks.length - 1}">＋ 添加块（或输入“/”选类型）</button>`;
+  autoGrowAll(nb);
+}
+
+function autoGrow(ta) {
+  if (!ta) return;
+  ta.style.height = "auto";
+  ta.style.height = Math.max(ta.scrollHeight, 38) + "px";
+}
+function autoGrowAll(root) {
+  root.querySelectorAll("textarea").forEach(autoGrow);
+}
+function focusBlock(idx) {
+  const nb = $("#noteBlocks");
+  if (!nb) return;
+  const ta = nb.querySelector(`[data-block-content="${idx}"], [data-block-title="${idx}"]`) || nb.querySelector(`.nb-row[data-block-index="${idx}"]`);
+  if (ta && ta.focus) { ta.focus(); if (ta.setSelectionRange) { const len = ta.value.length; ta.setSelectionRange(len, len); } autoGrow(ta); }
+}
+function toggleTypeMenu(nb, idx) {
+  const menu = nb.querySelector(`[data-type-menu="${idx}"]`);
+  if (!menu) return;
+  const willOpen = menu.hasAttribute("hidden");
+  nb.querySelectorAll(".nb-type-menu").forEach((m) => m.setAttribute("hidden", ""));
+  if (willOpen) menu.removeAttribute("hidden");
+}
+function schedulePersist() {
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => { if (window.__OOS_PERSIST) window.__OOS_PERSIST(); }, 400);
+}
+function compressNoteImage(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = new Image();
+      img.onload = function () {
+        const maxW = 1200;
+        const ratio = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * ratio; canvas.height = img.height * ratio;
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        let b64 = canvas.toDataURL("image/webp", 0.82);
+        if (b64.length > 320 * 1024) b64 = canvas.toDataURL("image/jpeg", 0.7);
+        resolve(b64);
+      };
+      img.onerror = function () { resolve(""); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function () { resolve(""); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function wireNoteBlocks(note) {
+  const nb = $("#noteBlocks");
+  if (!nb) return;
+  autoGrowAll(nb);
+  nb.addEventListener("input", (e) => {
+    const ta = e.target.closest("[data-block-content],[data-block-title]");
+    if (!ta) return;
+    const idx = Number(ta.dataset.blockContent != null ? ta.dataset.blockContent : ta.dataset.blockTitle);
+    const b = note.blocks[idx];
+    if (!b) return;
+    if (ta.dataset.blockTitle != null) b.children = ta.value;
+    else b.content = ta.value;
+    note.body = deriveNoteBody(note.blocks);
+    autoGrow(ta);
+    if (b.type === "paragraph" && ta.value === "/") toggleTypeMenu(nb, idx);
+    schedulePersist();
+  });
+  nb.addEventListener("change", (e) => {
+    const cb = e.target.closest("[data-todo-toggle]");
+    if (cb) { const b = note.blocks[Number(cb.dataset.todoToggle)]; if (b) { b.checked = cb.checked; schedulePersist(); } }
+  });
+  nb.addEventListener("click", (e) => {
+    const typeBtn = e.target.closest("[data-block-type]");
+    if (typeBtn) { toggleTypeMenu(nb, Number(typeBtn.dataset.blockType)); return; }
+    const setType = e.target.closest("[data-set-type]");
+    if (setType) {
+      const idx = Number(setType.dataset.setType); const ty = setType.dataset.type; const b = note.blocks[idx];
+      if (b) { b.type = ty; if (ty === "toggle" && b.children === undefined) b.children = ""; if (b.content === "/") b.content = ""; rerenderNoteBlocks(note); schedulePersist(); }
+      nb.querySelectorAll(".nb-type-menu").forEach((m) => m.setAttribute("hidden", ""));
+      return;
+    }
+    const del = e.target.closest("[data-block-del]");
+    if (del) { const idx = Number(del.dataset.blockDel); note.blocks.splice(idx, 1); if (!note.blocks.length) note.blocks.push({ type: "paragraph", content: "" }); rerenderNoteBlocks(note); schedulePersist(); return; }
+    const up = e.target.closest("[data-block-up]");
+    if (up) { const idx = Number(up.dataset.blockUp); if (idx > 0) { const tmp = note.blocks[idx - 1]; note.blocks[idx - 1] = note.blocks[idx]; note.blocks[idx] = tmp; rerenderNoteBlocks(note); focusBlock(idx - 1); schedulePersist(); } return; }
+    const down = e.target.closest("[data-block-down]");
+    if (down) { const idx = Number(down.dataset.blockDown); if (idx < note.blocks.length - 1) { const tmp = note.blocks[idx + 1]; note.blocks[idx + 1] = note.blocks[idx]; note.blocks[idx] = tmp; rerenderNoteBlocks(note); focusBlock(idx + 1); schedulePersist(); } return; }
+    const add = e.target.closest("[data-block-add]");
+    if (add) { const idx = Number(add.dataset.blockAdd); note.blocks.splice(idx + 1, 0, { type: "paragraph", content: "" }); rerenderNoteBlocks(note); focusBlock(idx + 1); schedulePersist(); return; }
+    const imgBtn = e.target.closest("[data-block-img]");
+    if (imgBtn) { const fi = nb.querySelector(`[data-block-file="${imgBtn.dataset.blockImg}"]`); if (fi) fi.click(); return; }
+    const imgFile = e.target.closest("[data-block-file]");
+    if (imgFile) { const idx = Number(imgFile.dataset.blockFile); const file = imgFile.files && imgFile.files[0]; if (file) compressNoteImage(file).then((b64) => { if (b64) { note.blocks[idx].src = b64; rerenderNoteBlocks(note); schedulePersist(); } }); return; }
+    const imgRemove = e.target.closest("[data-img-remove]");
+    if (imgRemove) { const idx = Number(imgRemove.dataset.imgRemove); note.blocks[idx].src = ""; rerenderNoteBlocks(note); schedulePersist(); return; }
+    const toggle = e.target.closest("[data-toggle-collapse]");
+    if (toggle) { const b = note.blocks[Number(toggle.dataset.toggleCollapse)]; if (b) { b.collapsed = !b.collapsed; rerenderNoteBlocks(note); schedulePersist(); } return; }
+  });
+}
+
+function saveNoteBlocks(note) {
+  if (!note) return;
+  const titleInput = $("#noteTitleInput");
+  const tagsInput = $("#noteTagsInput");
+  const title = (titleInput && titleInput.value.trim()) || deriveNoteTitle(note.blocks);
+  const tags = tagsInput ? String(tagsInput.value || "").split(/[,，]/).map((s) => s.trim()).filter(Boolean) : (note.tags || []);
+  const body = deriveNoteBody(note.blocks);
+  if (note.id && note.id !== "note-new") {
+    note.title = title; note.body = body; note.tags = tags; note.updatedAt = new Date().toISOString();
+    stateOps([{ type: "note.update", targetId: note.id, patch: { title, body, tags, blocks: note.blocks } }], "已保存。");
+  } else {
+    stateOps([{ type: "note.add", note: { title, body, tags, blocks: note.blocks, relatedGoals: [] } }], "已保存。");
+    selectedNoteId = null;
+  }
+}
+
 function renderNoteEditor(id) {
-  const note = id ? notes().find((item) => item.id === id) : null;
-  if (id && !note) { selectedNoteId = null; renderNotes(); return; }
-  setHero("备忘录", id ? "编辑中" : "新建", "");
-  $("#pageTitle").textContent = id ? "编辑备忘录" : "新建备忘录";
+  let note;
+  if (id && id !== "__new") {
+    note = notes().find((item) => item.id === id) || null;
+    if (!note) { selectedNoteId = null; renderNotes(); return; }
+  } else {
+    note = { id: "note-new", title: "", body: "", tags: [], blocks: [{ type: "paragraph", content: "" }] };
+  }
+  ensureNoteBlocks(note);
+  editingNoteRef = note;
+  setHero("备忘录", id && id !== "__new" ? "编辑中" : "新建", "块编辑器：输入“/”或点左侧按钮切换类型。");
+  $("#pageTitle").textContent = id && id !== "__new" ? "编辑备忘录" : "新建备忘录";
   $("#viewContent").innerHTML = `<button type="button" class="back-link" data-note-back>← 返回列表</button>
-    <form id="noteForm" class="memo-editor">
-      <input type="hidden" name="id" value="${esc(note ? note.id : "")}">
-      <label class="memo-field"><span>标题（可选，留空则取第一行）</span><input name="title" value="${esc(note ? note.title || "" : "")}" maxlength="120" placeholder="给这条备忘起个名"></label>
-      <textarea name="body" rows="14" placeholder="写点什么…" autofocus>${esc(note ? note.body || "" : "")}</textarea>
-      <label class="memo-field"><span>标签（逗号分隔）</span><input name="tags" value="${esc(note ? list(note.tags).join(", ") : "")}" placeholder="例如：灵感, 待办"></label>
+    <div class="memo-editor">
+      <input id="noteTitleInput" class="memo-title-input" value="${esc(note.title || "")}" maxlength="120" placeholder="标题（可选，留空取首行）">
+      <div id="noteBlocks" class="note-blocks">${note.blocks.map(blockRowMarkup).join("")}<button type="button" class="nb-add" data-block-add="${note.blocks.length - 1}">＋ 添加块（或输入“/”选类型）</button></div>
+      <input id="noteTagsInput" class="memo-tags-input" value="${esc(Array.isArray(note.tags) ? note.tags.join(", ") : "")}" placeholder="标签（逗号分隔）">
       <div class="memo-editor-actions">
-        <button type="button" class="memo-act" data-note-pin="${esc(note ? note.id : "")}" ${note ? "" : "disabled"}>${note && note.pinned ? "取消置顶" : "置顶"}</button>
-        <button type="button" class="memo-act danger" data-note-delete="${esc(note ? note.id : "")}" ${note ? "" : "disabled"}>删除</button>
-        <button type="submit" class="memo-save">保存</button>
+        <button type="button" class="memo-act" data-note-pin="${esc(note.id !== "note-new" ? note.id : "")}" ${note.id !== "note-new" ? "" : "disabled"}>${note.id !== "note-new" && note.pinned ? "取消置顶" : "置顶"}</button>
+        <button type="button" class="memo-act danger" data-note-delete="${esc(note.id !== "note-new" ? note.id : "")}" ${note.id !== "note-new" ? "" : "disabled"}>删除</button>
+        <button type="button" class="memo-save" data-note-blocks-save>保存</button>
       </div>
-    </form>`;
+    </div>`;
+  wireNoteBlocks(note);
 }
 
 function renderReview() {
@@ -770,6 +971,7 @@ function render() {
   else if (view === "track") renderTrack(selectedTrackId);
   else if (view === "notes") renderNotes();
   else if (view === "review") renderReview();
+  else if (view === "finance") renderFinance();
   else renderToday();
 }
 
@@ -1029,6 +1231,32 @@ document.addEventListener("click", async (event) => {
   }
   const memoOpen = event.target.closest("[data-memo-open]");
   if (memoOpen) { view = "notes"; selectedNoteId = null; render(); return; }
+  const finTab = event.target.closest("[data-fin-tab]");
+  if (finTab) { financeTab = finTab.dataset.finTab; renderFinance(); return; }
+  const finAdd = event.target.closest("[data-fin-add]");
+  if (finAdd) { openFinModal(finAdd.dataset.finAdd, ""); return; }
+  const finEdit = event.target.closest("[data-fin-edit]");
+  if (finEdit) { const p = finEdit.dataset.finEdit.split(":"); openFinModal(p[0], p[1]); return; }
+  const finDel = event.target.closest("[data-fin-del]");
+  if (finDel) {
+    const p = finDel.dataset.finDel.split(":");
+    const label = p[0] === "fixed" ? "固定开支" : p[0] === "expenses" ? "开支记录" : "心愿";
+    if (confirm(`确定删除这条${label}？删除后无法恢复。`)) {
+      stateOps([{ type: "finance.delete", collection: p[0], targetId: p[1] }], "已删除。").then(() => { if (view === "finance") renderFinance(); });
+    }
+    return;
+  }
+  const guideToggle = event.target.closest("[data-guide-toggle]");
+  if (guideToggle) { guideToggle.classList.toggle("open"); return; }
+  const wishBuy = event.target.closest("[data-wish-buy]");
+  if (wishBuy) {
+    const fin = (state && state.finance) || { wishes: [] };
+    const w = (fin.wishes || []).find((x) => x.id === wishBuy.dataset.wishBuy);
+    if (w) { const ns = w.status === "bought" ? "pending" : "bought"; stateOps([{ type: "finance.update", collection: "wishes", targetId: w.id, patch: { status: ns } }], ns === "bought" ? "已标记为购买。" : "已取消。").then(() => { if (view === "finance") renderFinance(); }); }
+    return;
+  }
+  const blocksSave = event.target.closest("[data-note-blocks-save]");
+  if (blocksSave) { saveNoteBlocks(editingNoteRef); return; }
   const date = event.target.closest("[data-date]");
   if (date) { selectedDate = date.dataset.date; renderPlan(); return; }
   const weekShift = event.target.closest("[data-week-shift]");
@@ -1162,6 +1390,30 @@ document.addEventListener("submit", async (event) => {
     const entry = { value, date: data.date || todayIso(), note: String(data.note || "").trim(), unit: form.dataset.unit || "" };
     await stateOps([{ type: "metric.record", trackId: form.dataset.trackId, viewId: form.dataset.viewId, metricKey: form.dataset.metricKey, entry }], "真实数值已写入趋势。");
   }
+  if (form.id === "finForm") {
+    const collection = form.dataset.collection || "fixed";
+    const id = form.dataset.id || "";
+    const name = String(data.name || "").trim();
+    if (!name) return toast("名称不能为空。");
+    let item;
+    if (collection === "fixed") {
+      const amount = numOrNull(data.amount);
+      const dueDay = intOrNull(data.dueDay);
+      item = { id: id || `fin-${Date.now()}`, name, amount: amount != null ? amount : 0, dueDay: dueDay != null ? dueDay : null, category: String(data.category || "").trim(), note: String(data.note || "").trim() };
+    } else if (collection === "expenses") {
+      const amount = numOrNull(data.amount);
+      item = { id: id || `fin-${Date.now()}`, date: data.date || todayIso(), name, amount: amount != null ? amount : 0, category: String(data.category || "").trim(), note: String(data.note || "").trim() };
+    } else {
+      const estPrice = numOrNull(data.estPrice);
+      item = { id: id || `fin-${Date.now()}`, name, estPrice: estPrice != null ? estPrice : 0, priority: data.priority === "longterm" ? "longterm" : "now", reason: String(data.reason || "").trim() };
+      if (!id) item.status = "pending";
+    }
+    const op = id ? { type: "finance.update", collection, targetId: id, patch: item } : { type: "finance.add", collection, item };
+    await stateOps([op], id ? "已更新。" : "已保存。");
+    if (view === "finance") renderFinance();
+    closeOverlay();
+    return;
+  }
 });
 
 $("#searchInput").addEventListener("input", () => { if (view === "notes") renderNotes(); });
@@ -1201,6 +1453,137 @@ window.openQuickMemo = function () {
   });
   text.focus();
 };
+
+function fmtMoney(n) {
+  const v = Number(n) || 0;
+  return "¥" + (Number.isInteger(v) ? v.toLocaleString("zh-CN") : v.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+}
+function numOrNull(v) { const n = parseFloat(v); return Number.isFinite(n) && n > 0 ? n : null; }
+function intOrNull(v) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; }
+
+function finIcon(name) {
+  const I = {
+    album: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/><path d="M3 9h18"/></svg>',
+    goose: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="14" rx="7" ry="5"/><path d="M19 9l3-2v4l-3-1"/><circle cx="9" cy="12" r="1"/></svg>',
+    split: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M9 6v12M15 6v12" opacity=".4"/></svg>',
+    book: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3z"/><path d="M5 4v16"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
+    star: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/></svg>'
+  };
+  return I[name] || I.star;
+}
+
+const FIN_GUIDE = [
+  { key: "album", icon: "album", title: "梦想相册 & 储蓄罐", one: "把想要的东西可视化", detail: "把想买的东西写成清单，最好配上图，每天看一眼。可以用本页「购物心愿单」记录，或专门建一条备忘录贴图。", benefit: "让“存钱”有了具体的画面，冲动消费会自然减少——你清楚自己为什么在忍。" },
+  { key: "goose", icon: "goose", title: "养鹅原则（先储蓄后消费）", one: "收入先喂鹅，再花", detail: "拿到收入，先拿出 10–20% 放进“会下金蛋的鹅”（储蓄 / 低风险投资），剩下的才用于开销。鹅永远不动本金。", benefit: "复利会替你滚动赚钱，长期走向“被动收入”和财务自由，而不是一直为钱打工。" },
+  { key: "split", icon: "split", title: "分账户：鹅 / 梦想 / 日常", one: "把钱分成三份", detail: "参考 50/30/20 思路：日常开销、梦想储蓄（旅行/大件）、养鹅各占一份。本页的「固定开支」「购物心愿单」就是帮你看清这三块。", benefit: "一眼看清钱去哪了，能立刻判断一笔消费该不该花，控制“想要”不失控。" },
+  { key: "book", icon: "book", title: "坚持记账（知道钱去哪了）", one: "每笔记录，月底复盘", detail: "用本页「固定开支」记每月必花，「本月开支」记日常消费。月底看看总额和分类。", benefit: "能揪出隐形漏洞（每天奶茶、随手打车），把省下来的钱喂鹅和梦想，越记越有钱。" },
+  { key: "shield", icon: "shield", title: "远离消费债", one: "不透支消费", detail: "尽量不用信用卡透支、不分期买用不起的东西。真要买大件，先塞进「购物心愿单」攒钱。", benefit: "不付利息，现金流始终健康，遇到机会才有钱上车。" },
+  { key: "star", icon: "star", title: "成功日记（自信账户）", one: "记录每个小成就", detail: "每完成一次存钱、一次复盘、一次拒绝冲动消费，都记一笔。可以写在备忘录里。", benefit: "强化“我真的能管住钱”的信念，理财是长跑，自信让你坚持得更久。" }
+];
+
+function financeGuideMarkup() {
+  return `<section class="panel fin-guide-panel"><header class="panel-head"><div><h2>使用说明</h2><p>《小狗钱钱》的核心理财逻辑，点开每张卡看「为什么这样做」</p></div></header>
+    <div class="fin-guide-list">${FIN_GUIDE.map((g) => `<div class="fin-guide-card" data-guide-toggle="${g.key}">
+      <div class="fin-guide-head"><span class="fin-guide-icon">${finIcon(g.icon)}</span><div><strong>${esc(g.title)}</strong><small>${esc(g.one)}</small></div><span class="fin-guide-caret">▾</span></div>
+      <div class="fin-guide-detail"><p>${esc(g.detail)}</p><p class="fin-benefit"><b>这样做的好处：</b>${esc(g.benefit)}</p></div>
+    </div>`).join("")}</div>
+    <div class="fin-guide-foot">先用「固定开支」和「本月开支」把账记起来，再用「购物心愿单」给想买的东西排优先级——这就是小狗钱钱教你的“先看见钱，再指挥钱”。</div>
+  </section>`;
+}
+
+function financeFixedMarkup(fin) {
+  const items = fin.fixed || [];
+  const total = items.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+  return `<section class="panel"><header class="panel-head"><div><h2>固定开支</h2><p>每月必花的钱（房租、话费、会员…）</p></div><span class="fin-sum">月固定 ${fmtMoney(total)}</span></header>
+    <div class="fin-list">${items.length ? items.map((x) => `<article class="fin-row">
+      <div class="fin-row-main"><strong>${esc(x.name || "未命名")}</strong><small>${esc(x.category || "未分类")}${x.dueDay ? " · 每月 " + esc(x.dueDay) + " 号" : ""}</small></div>
+      <span class="fin-amt">${fmtMoney(x.amount)}</span>
+      <div class="fin-row-ops"><button type="button" class="fin-mini" data-fin-edit="fixed:${esc(x.id)}">编辑</button><button type="button" class="fin-mini danger" data-fin-del="fixed:${esc(x.id)}">删除</button></div>
+    </article>`).join("") : emptyState("还没有固定开支", "点下方按钮，把每月必花的钱记下来。")}</div>
+    <button type="button" class="fin-add" data-fin-add="fixed">＋ 添加固定开支</button>
+  </section>`;
+}
+
+function financeExpensesMarkup(fin) {
+  const all = fin.expenses || [];
+  const month = todayIso().slice(0, 7);
+  const items = all.filter((x) => String(x.date || "").slice(0, 7) === month).sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+  const total = items.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+  return `<section class="panel"><header class="panel-head"><div><h2>本月开支</h2><p>${month} 的日常消费记录</p></div><span class="fin-sum">本月已花 ${fmtMoney(total)}</span></header>
+    <div class="fin-list">${items.length ? items.map((x) => `<article class="fin-row">
+      <div class="fin-row-main"><strong>${esc(x.name || "未命名")}</strong><small>${esc(x.date || "")}${x.category ? " · " + esc(x.category) : ""}</small></div>
+      <span class="fin-amt">${fmtMoney(x.amount)}</span>
+      <div class="fin-row-ops"><button type="button" class="fin-mini" data-fin-edit="expenses:${esc(x.id)}">编辑</button><button type="button" class="fin-mini danger" data-fin-del="expenses:${esc(x.id)}">删除</button></div>
+    </article>`).join("") : emptyState("本月还没有开支记录", "买杯奶茶、打个车都记一笔，月底就知道钱去哪了。")}</div>
+    <button type="button" class="fin-add" data-fin-add="expenses">＋ 记录一笔开支</button>
+  </section>`;
+}
+
+function financeWishesMarkup(fin) {
+  const all = fin.wishes || [];
+  const now = all.filter((x) => x.priority !== "longterm").sort((a, b) => (Number(a.estPrice) || 0) - (Number(b.estPrice) || 0));
+  const long = all.filter((x) => x.priority === "longterm").sort((a, b) => (Number(a.estPrice) || 0) - (Number(b.estPrice) || 0));
+  const card = (x) => `<article class="fin-wish ${x.status === "bought" ? "bought" : ""}">
+    <div class="fin-wish-top"><strong>${esc(x.name || "未命名")}</strong><span class="fin-wish-price">${fmtMoney(x.estPrice)}</span></div>
+    ${x.reason ? `<p class="fin-wish-reason">${esc(x.reason)}</p>` : ""}
+    <div class="fin-wish-ops">
+      <button type="button" class="fin-mini" data-wish-buy="${esc(x.id)}">${x.status === "bought" ? "取消已购" : "标记已购"}</button>
+      <button type="button" class="fin-mini" data-fin-edit="wishes:${esc(x.id)}">编辑</button>
+      <button type="button" class="fin-mini danger" data-fin-del="wishes:${esc(x.id)}">删除</button>
+    </div>
+  </article>`;
+  return `<section class="panel"><header class="panel-head"><div><h2>购物心愿单</h2><p>想买的东西排个序：现在优先买 vs 长期目标</p></div></header>
+    <div class="fin-wish-group"><h3 class="fin-wish-h3 now">现在优先买 <span>${now.length}</span></h3>${now.length ? now.map(card).join("") : `<p class="fin-empty">把近期想买、买得起的放这里。</p>`}</div>
+    <div class="fin-wish-group"><h3 class="fin-wish-h3 long">长期目标 <span>${long.length}</span></h3>${long.length ? long.map(card).join("") : `<p class="fin-empty">大额、不急的放这里，慢慢攒。</p>`}</div>
+    <button type="button" class="fin-add" data-fin-add="wishes">＋ 添加一个心愿</button>
+  </section>`;
+}
+
+function renderFinance() {
+  const fin = (state && state.finance) || { fixed: [], expenses: [], wishes: [] };
+  setHero("小狗钱钱", "把每一分钱，都养成会下金蛋的鹅。", "《小狗钱钱》式理财：先储蓄后消费，可视化愿望，记账看清漏洞。");
+  $("#pageTitle").textContent = "小狗钱钱";
+  const tabs = [["guide", "使用说明"], ["fixed", "固定开支"], ["expenses", "本月开支"], ["wishes", "购物心愿单"]];
+  const tabBar = `<div class="fin-tabs">${tabs.map((t) => `<button type="button" class="fin-tab ${financeTab === t[0] ? "active" : ""}" data-fin-tab="${t[0]}">${t[1]}</button>`).join("")}</div>`;
+  let body = "";
+  if (financeTab === "guide") body = financeGuideMarkup();
+  else if (financeTab === "fixed") body = financeFixedMarkup(fin);
+  else if (financeTab === "expenses") body = financeExpensesMarkup(fin);
+  else body = financeWishesMarkup(fin);
+  $("#viewContent").innerHTML = tabBar + body;
+}
+
+function finFields(collection, item) {
+  item = item || {};
+  if (collection === "fixed") {
+    return `<label><span>名称</span><input name="name" required maxlength="60" value="${esc(item.name || "")}" placeholder="如：房租 / 话费 / 会员"></label>
+      <div class="field-pair"><label><span>每月金额（¥）</span><input name="amount" type="number" min="0" step="0.01" value="${esc(item.amount != null ? item.amount : "")}" placeholder="0"></label>
+      <label><span>每月几号扣（1–28）</span><input name="dueDay" type="number" min="1" max="28" value="${esc(item.dueDay != null ? item.dueDay : "")}" placeholder="可选"></label></div>
+      <label><span>分类</span><input name="category" maxlength="20" value="${esc(item.category || "")}" placeholder="如：居住 / 饮食 / 订阅"></label>
+      <label><span>备注</span><textarea name="note" rows="2">${esc(item.note || "")}</textarea></label>`;
+  }
+  if (collection === "expenses") {
+    return `<label><span>日期</span><input name="date" type="date" value="${esc(item.date || todayIso())}"></label>
+      <label><span>名称</span><input name="name" required maxlength="60" value="${esc(item.name || "")}" placeholder="买了什么"></label>
+      <div class="field-pair"><label><span>金额（¥）</span><input name="amount" type="number" min="0" step="0.01" value="${esc(item.amount != null ? item.amount : "")}" placeholder="0"></label>
+      <label><span>分类</span><input name="category" maxlength="20" value="${esc(item.category || "")}" placeholder="如：餐饮 / 交通"></label></div>
+      <label><span>备注</span><textarea name="note" rows="2">${esc(item.note || "")}</textarea></label>`;
+  }
+  return `<label><span>想要的东西</span><input name="name" required maxlength="60" value="${esc(item.name || "")}" placeholder="如：新相机 / 显示器"></label>
+    <div class="field-pair"><label><span>预估价格（¥）</span><input name="estPrice" type="number" min="0" step="0.01" value="${esc(item.estPrice != null ? item.estPrice : "")}" placeholder="0"></label>
+    <label><span>优先级</span><select name="priority"><option value="now" ${item.priority !== "longterm" ? "selected" : ""}>现在优先买</option><option value="longterm" ${item.priority === "longterm" ? "selected" : ""}>长期目标</option></select></label></div>
+    <label><span>为什么想要（理由）</span><textarea name="reason" rows="2">${esc(item.reason || "")}</textarea></label>`;
+}
+
+function openFinModal(collection, id) {
+  const fin = (state && state.finance) || { fixed: [], expenses: [], wishes: [] };
+  const item = id ? (fin[collection] || []).find((x) => x.id === id) : null;
+  const titleMap = { fixed: item ? "编辑固定开支" : "添加固定开支", expenses: item ? "编辑开支" : "记录一笔开支", wishes: item ? "编辑心愿" : "添加一个心愿" };
+  const root = $("#overlayRoot");
+  if (!root) return;
+  root.innerHTML = `<div class="overlay" data-overlay-close></div><aside class="drawer fin-drawer" role="dialog" aria-modal="true"><header><div><span class="eyebrow">小狗钱钱</span><h2>${esc(titleMap[collection])}</h2></div><button type="button" data-overlay-close>×</button></header><form id="finForm" data-collection="${collection}" data-id="${esc(id || "")}">${finFields(collection, item)}<footer><button type="button" data-overlay-close>取消</button><button type="submit" class="primary">保存</button></footer></form></aside>`;
+}
 
 load({ offerFirstFlight: false }).then(startLiveSync).catch((error) => {
   $("#viewContent").innerHTML = `<section class="load-error"><span>CONNECTION LOST</span><h2>没有读到 OOS 状态</h2><p>${esc(error.message)}</p><button type="button" onclick="location.reload()">重新连接</button></section>`;
