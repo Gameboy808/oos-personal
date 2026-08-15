@@ -1214,6 +1214,7 @@
     "openRepairs": []
   },
   "inbox": [],
+  "finance": { "fixed": [], "expenses": [], "wishes": [] },
   "seeds": [
     {
       "id": "comfyui-learning-2026-08",
