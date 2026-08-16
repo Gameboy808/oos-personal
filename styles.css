@@ -587,6 +587,7 @@ h1, h2, h3, p { margin-top: 0; }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important; } }
 
 /* ===== 小狗钱钱 · 记账系统 ===== */
+.fin-view { padding-bottom: 100px; }
 .fin-tabs { display:flex; gap:6px; margin:0 0 14px; flex-wrap:wrap; }
 .fin-tab { padding:8px 16px; border:1px solid var(--line); border-radius:30px; background:#fff; color:var(--muted); font-size:13px; font-weight:700; cursor:pointer; transition:all .15s ease; }
 .fin-tab:hover { border-color:var(--accent); color:var(--ink); }
