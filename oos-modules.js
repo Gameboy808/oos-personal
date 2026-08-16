@@ -15,7 +15,7 @@
     zh: {
       navEnglish: "英语练习", navSocial: "自媒体运营", navInspiration: "灵感发现", navJournal: "手帐",
       newTask: "新建", newTaskFull: "＋ 新建", langToggle: "EN",
-      newFor: { today: "＋ 新建任务", plan: "＋ 新建安排", tracks: "＋ 新建轨道", track: "＋ 新建任务", english: "＋ 新建例句", social: "＋ 新建发布", inspiration: "＋ 新建灵感", journal: "＋ 写手帐" },
+      newFor: { today: "新建任务", plan: "新建安排", tracks: "新建轨道", track: "新建任务", english: "新建例句", social: "新建发布", inspiration: "新建灵感", journal: "写手帐", finance: "记一笔", notes: "新建备忘" },
       moduleEnglish: "英语练习", moduleSocial: "自媒体运营", moduleInspiration: "灵感发现",
       englishSub: "每日磨耳朵 · 盲听跟读", socialSub: "六平台账号与发布记录", inspirationSub: "每日灵感 · 一键成稿",
       engTitle: "英语练习", engSub: "选一门课，盲听→显示原文→跟读，口语自然上来",
@@ -90,6 +90,7 @@
       priNormal: "Normal", priHigh: "High", submit: "Save", cancel: "Cancel",
       today: "Today", tmr: "Tomorrow",
       saved: "Saved", taskAdded: "Task added to Today", trackAdded: "Long-term track created", blockAdded: "Block added to plan", sentenceAdded: "Sentence added to lesson", inspAdded: "Idea saved", pleaseTitle: "Please enter a title",
+      newFor: { today: "New task", plan: "New block", tracks: "New track", track: "New task", english: "New sentence", social: "New post", inspiration: "New idea", journal: "New journal", finance: "Log money", notes: "New note" },
       langZH: "中", langEN: "EN"
     }
   };
@@ -566,6 +567,8 @@
     if (ctx === "social") return openSocialPostForm();
     if (ctx === "inspiration") return openInspirationForm();
     if (ctx === "journal") return (window.__oosJournalTab === "review") ? openReviewForm() : openJournalForm();
+    if (ctx === "finance" && typeof window.openFinModal === "function") return window.openFinModal("expenses");
+    if (ctx === "notes" && typeof window.openNoteEditor === "function") return window.openNoteEditor("note-new");
     return openTaskForm();
   }
 
@@ -591,8 +594,8 @@
     clone.addEventListener("click", () => openCreateForContext(getContext()));
     newFabEl.parentNode.replaceChild(clone, newFabEl);
     newFabEl = clone;
-    // Plan/Track 页面 FAB 与页面内已有大按钮共存；其他模块保留
-    const hideOn = [];
+    // Plan/Track 页面 FAB 与页面内已有大按钮共存；财务/备忘录自身有新建入口，隐藏避免重叠
+    const hideOn = ["finance", "notes"];
     newFabEl.classList.toggle("fab-hidden", hideOn.includes(ctx));
   }
   function observeContext(cb) {
