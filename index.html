@@ -11,33 +11,35 @@
     <link rel="stylesheet" href="./public-overrides.css?v=6.0.0-runtime" />
     <link rel="manifest" href="./manifest.json" />
     <style>
-      /* 右下角「更新 / 同步」浮标，参照 Focus App 的同步按钮 */
+      /* 「同步」按钮：桌面端置于左侧导航栏底部；移动端退化为右下角浮标 */
       #syncFab {
-        position: fixed;
-        right: 22px;
-        bottom: 22px;
-        z-index: 60;
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 18px;
-        border: none;
-        border-radius: 999px;
-        background: #10b981;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 600;
+        gap: 10px;
+        width: 100%;
+        margin: 12px 0 0;
+        padding: 11px 12px;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        border-radius: 10px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #a8ecd0;
+        font-size: 12.5px;
+        font-weight: 750;
         font-family: inherit;
-        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+        text-align: left;
         cursor: pointer;
-        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+        box-shadow: none;
         -webkit-tap-highlight-color: transparent;
       }
-      #syncFab:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.45); }
-      #syncFab:active { transform: scale(0.96); }
-      #syncFab .sync-icon { font-size: 16px; line-height: 1; }
+      #syncFab:hover { background: rgba(16, 185, 129, 0.2); color: #d2f5e6; }
+      #syncFab:active { transform: scale(0.98); }
+      #syncFab .sync-icon { font-size: 15px; line-height: 1; }
       #syncFab.spinning .sync-icon { animation: oos-spin 0.8s linear infinite; }
       @keyframes oos-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+      @media (max-width: 640px) {
+        #syncFab { position: fixed; right: 14px; bottom: 18px; width: auto; margin: 0; padding: 11px 15px; border-radius: 999px; background: #10b981; color: #fff; border: none; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); }
+        #syncFab .sync-label { display: none; }
+      }
       /* 任务完成后整卡淡出提示 */
       .task-card.is-done .task-title strong { text-decoration: line-through; opacity: 0.6; }
       @media (max-width: 640px) {
@@ -89,8 +91,8 @@
     <script src="./calendar-ui.js?v=1.0.1"></script>
     <script src="./oos-client.js?v=5.0.0"></script>
     <script src="./app.js?v=7.0.0-v14"></script>
-    <script src="./oos-enhance.js?v=3"></script>
-    <script src="./oos-modules.js?v=9"></script>
+    <script src="./oos-enhance.js?v=4"></script>
+    <script src="./oos-modules.js?v=10"></script>
     <script src="./oos-sync.js?v=6"></script>
   <script>
     if ("serviceWorker" in navigator) {
