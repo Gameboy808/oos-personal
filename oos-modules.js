@@ -198,7 +198,7 @@
   .lang-toggle{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:10px;background:rgba(16,185,129,.1);color:#0f9d6b;font-size:12px;font-weight:600;cursor:pointer;border:none}
   .lang-toggle:hover{background:rgba(16,185,129,.18)}
   /* 新建 FAB */
-  #newFab{position:fixed;right:22px;bottom:84px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:13px 20px;border:none;border-radius:999px;background:#151513;color:#fff;font-size:14px;font-weight:600;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease;-webkit-tap-highlight-color:transparent}
+  #newFab{position:fixed;right:22px;bottom:22px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:13px 20px;border:none;border-radius:999px;background:#151513;color:#fff;font-size:14px;font-weight:600;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease;-webkit-tap-highlight-color:transparent}
   #newFab:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.32)}
   #newFab:active{transform:scale(.96)}
   #newFab .nf-icon{font-size:18px;line-height:1}
