@@ -594,8 +594,8 @@
     clone.addEventListener("click", () => openCreateForContext(getContext()));
     newFabEl.parentNode.replaceChild(clone, newFabEl);
     newFabEl = clone;
-    // Plan/Track 页面 FAB 与页面内已有大按钮共存；财务/备忘录自身有新建入口，隐藏避免重叠
-    const hideOn = ["finance", "notes"];
+    // 这些视图页面内已有新建入口，或底部与同步按钮重叠，隐藏全局 FAB
+    const hideOn = ["finance", "notes", "plan"];
     newFabEl.classList.toggle("fab-hidden", hideOn.includes(ctx));
   }
   function observeContext(cb) {
