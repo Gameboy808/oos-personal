@@ -14,7 +14,15 @@
     btn.type = "button";
     btn.setAttribute("aria-label", "同步最新状态");
     btn.innerHTML = '<span class="sync-icon" aria-hidden="true">⟳</span><span class="sync-label">同步</span>';
-    document.body.appendChild(btn);
+    // 放入左侧导航栏底部（在连接状态之前），桌面端不再占用右下角
+    var launcher = document.querySelector(".launcher");
+    if (launcher) {
+      var foot = launcher.querySelector(".launcher-foot");
+      if (foot) launcher.insertBefore(btn, foot);
+      else launcher.appendChild(btn);
+    } else {
+      document.body.appendChild(btn);
+    }
 
     btn.addEventListener("click", function () {
       if (btn.classList.contains("spinning")) return;
