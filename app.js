@@ -904,9 +904,9 @@ function wireNoteBlocks(note) {
   const nb = $("#noteBlocks");
   if (!nb) return;
   autoGrowAll(nb);
-  nb.addEventListener("input", (e) => {
-    const ta = e.target.closest("[data-block-content],[data-block-title]");
-    if (!ta) return;
+  let composing = false;
+  let composingTa = null;
+  function updateBlock(ta) {
     const idx = Number(ta.dataset.blockContent != null ? ta.dataset.blockContent : ta.dataset.blockTitle);
     const b = note.blocks[idx];
     if (!b) return;
@@ -915,7 +915,20 @@ function wireNoteBlocks(note) {
     note.body = deriveNoteBody(note.blocks);
     autoGrow(ta);
     if (b.type === "paragraph" && ta.value === "/") toggleTypeMenu(nb, idx);
-    schedulePersist();
+  }
+  nb.addEventListener("compositionstart", (e) => {
+    const ta = e.target.closest("[data-block-content],[data-block-title]");
+    if (ta) { composing = true; composingTa = ta; }
+  });
+  nb.addEventListener("compositionend", (e) => {
+    const ta = e.target.closest("[data-block-content],[data-block-title]");
+    if (ta) { composing = false; composingTa = null; updateBlock(ta); schedulePersist(); }
+  });
+  nb.addEventListener("input", (e) => {
+    const ta = e.target.closest("[data-block-content],[data-block-title]");
+    if (!ta) return;
+    updateBlock(ta);
+    if (!e.isComposing && !composing) schedulePersist();
   });
   nb.addEventListener("change", (e) => {
     const cb = e.target.closest("[data-todo-toggle]");
@@ -1670,7 +1683,7 @@ function renderFinance() {
   else if (financeTab === "fixed") body = financeFixedMarkup(fin);
   else if (financeTab === "expenses") body = financeExpensesMarkup(fin);
   else body = financeWishesMarkup(fin);
-  $("#viewContent").innerHTML = tabBar + body;
+  $("#viewContent").innerHTML = tabBar + `<div class="fin-view">${body}</div>`;
 }
 
 function finFields(collection, item) {
