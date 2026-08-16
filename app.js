@@ -1537,7 +1537,8 @@ document.addEventListener("submit", async (event) => {
       item = { id: id || `fin-${Date.now()}`, date: data.date || todayIso(), name, amount: amount != null ? amount : 0, category: String(data.category || "").trim(), note: String(data.note || "").trim() };
     } else {
       const estPrice = numOrNull(data.estPrice);
-      item = { id: id || `fin-${Date.now()}`, name, estPrice: estPrice != null ? estPrice : 0, priority: data.priority === "longterm" ? "longterm" : "now", reason: String(data.reason || "").trim() };
+      const saved = numOrNull(data.saved);
+      item = { id: id || `fin-${Date.now()}`, name, estPrice: estPrice != null ? estPrice : 0, saved: saved != null ? saved : 0, priority: data.priority === "longterm" ? "longterm" : "now", reason: String(data.reason || "").trim() };
       if (!id) item.status = "pending";
     }
     const op = id ? { type: "finance.update", collection, targetId: id, patch: item } : { type: "finance.add", collection, item };
@@ -1658,6 +1659,7 @@ function financeWishesMarkup(fin) {
   const long = all.filter((x) => x.priority === "longterm").sort((a, b) => (Number(a.estPrice) || 0) - (Number(b.estPrice) || 0));
   const card = (x) => `<article class="fin-wish ${x.status === "bought" ? "bought" : ""}">
     <div class="fin-wish-top"><strong>${esc(x.name || "未命名")}</strong><span class="fin-wish-price">${fmtMoney(x.estPrice)}</span></div>
+    ${x.estPrice ? `<div class="wish-bar"><div class="wish-bar-fill ${x.status === "bought" ? "done" : ""}" style="width:${wishPct(x)}%"></div></div><small class="wish-bar-cap">已攒 ${fmtMoney(x.saved || 0)} / ${fmtMoney(x.estPrice)} · ${wishPct(x)}%</small>` : ""}
     ${x.reason ? `<p class="fin-wish-reason">${esc(x.reason)}</p>` : ""}
     <div class="fin-wish-ops">
       <button type="button" class="fin-mini" data-wish-buy="${esc(x.id)}">${x.status === "bought" ? "取消已购" : "标记已购"}</button>
@@ -1672,14 +1674,109 @@ function financeWishesMarkup(fin) {
   </section>`;
 }
 
+const FIN_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316", "#64748B", "#84CC16"];
+
+function wishPct(x) {
+  const price = Number(x.estPrice) || 0;
+  if (!price) return 0;
+  const saved = Number(x.saved) || 0;
+  return Math.max(0, Math.min(100, Math.round(saved / price * 100)));
+}
+
+function finCategoryGroups(items, key) {
+  const map = {};
+  (items || []).forEach((x) => {
+    const k = String(x[key] || "未分类").trim() || "未分类";
+    map[k] = (map[k] || 0) + (Number(x.amount) || 0);
+  });
+  return Object.keys(map).map((k) => ({ label: k, value: map[k] })).sort((a, b) => b.value - a.value);
+}
+
+// 手写 SVG 环形图：无外部依赖，PWA 离线可用
+function donutChart(segments, centerTop, centerSub) {
+  const size = 168, stroke = 20;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const total = segments.reduce((s, x) => s + x.value, 0);
+  if (total <= 0) return "";
+  let off = 0;
+  const arcs = segments.map((seg) => {
+    const len = (seg.value / total) * c;
+    const dash = `${len.toFixed(2)} ${(c - len).toFixed(2)}`;
+    const o = (-off).toFixed(2);
+    off += len;
+    return `<circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${stroke}" stroke-dasharray="${dash}" stroke-dashoffset="${o}"></circle>`;
+  }).join("");
+  const cx = size / 2, cy = size / 2;
+  return `<svg class="fin-donut" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="占比环形图">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${stroke}"></circle>
+    <g transform="rotate(-90 ${cx} ${cy})">${arcs}</g>
+    <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="fin-donut-top">${esc(centerTop)}</text>
+    <text x="${cx}" y="${cy + 16}" text-anchor="middle" class="fin-donut-sub">${esc(centerSub)}</text>
+  </svg>`;
+}
+
+function finLegend(segments, total) {
+  return `<ul class="fin-legend">${segments.map((s) => `<li><span class="fin-dot" style="background:${s.color}"></span><span class="fin-leg-label">${esc(s.label)}</span><span class="fin-leg-val">${fmtMoney(s.value)}</span><span class="fin-leg-pct">${total ? Math.round(s.value / total * 100) : 0}%</span></li>`).join("")}</ul>`;
+}
+
+function financeReportChart(title, sub, segs, total, emptyText) {
+  if (segs.length) {
+    return `<div class="fin-chart-card"><div class="fin-chart-head"><h3>${esc(title)}</h3><span class="fin-chart-total">${fmtMoney(total)}</span></div>
+      <div class="fin-chart-body">${donutChart(segs, fmtMoney(total), sub)}${finLegend(segs, total)}</div></div>`;
+  }
+  return `<div class="fin-chart-card"><div class="fin-chart-head"><h3>${esc(title)}</h3></div>${emptyState(emptyText, "先去对应标签页记几笔，图就出来了。")}</div>`;
+}
+
+function financeWishesProgressMarkup(fin) {
+  const all = fin.wishes || [];
+  if (!all.length) return "";
+  const now = all.filter((x) => x.priority !== "longterm").sort((a, b) => wishPct(b) - wishPct(a));
+  const long = all.filter((x) => x.priority === "longterm").sort((a, b) => wishPct(b) - wishPct(a));
+  const row = (x) => `<div class="wish-prog-row ${x.status === "bought" ? "bought" : ""}">
+    <div class="wish-prog-top"><strong>${esc(x.name || "未命名")}</strong><span>${fmtMoney(x.saved || 0)} / ${fmtMoney(x.estPrice)}</span></div>
+    <div class="wish-bar"><div class="wish-bar-fill ${x.status === "bought" ? "done" : ""}" style="width:${wishPct(x)}%"></div></div>
+    <small>${x.status === "bought" ? "已购入 ✓" : "已攒 " + wishPct(x) + "%"}</small>
+  </div>`;
+  return `<div class="fin-wish-prog">
+    <h3 class="fin-wish-h3 now">现在优先买 <span>${now.length}</span></h3>${now.length ? now.map(row).join("") : `<p class="fin-empty">把近期想买、买得起的放这里。</p>`}
+    <h3 class="fin-wish-h3 long">长期目标 <span>${long.length}</span></h3>${long.length ? long.map(row).join("") : `<p class="fin-empty">大额、不急的放这里，慢慢攒。</p>`}
+  </div>`;
+}
+
+function financeReportMarkup(fin) {
+  const month = todayIso().slice(0, 7);
+  const expThisMonth = (fin.expenses || []).filter((x) => String(x.date || "").slice(0, 7) === month);
+  const expSegs = finCategoryGroups(expThisMonth, "category").map((s, i) => ({ ...s, color: FIN_COLORS[i % FIN_COLORS.length] }));
+  const fixedSegs = finCategoryGroups(fin.fixed || [], "category").map((s, i) => ({ ...s, color: FIN_COLORS[i % FIN_COLORS.length] }));
+  const expTotal = expSegs.reduce((s, x) => s + x.value, 0);
+  const fixedTotal = fixedSegs.reduce((s, x) => s + x.value, 0);
+  const wishes = fin.wishes || [];
+  const boughtCount = wishes.filter((w) => w.status === "bought").length;
+  const wishBudget = wishes.filter((w) => w.status !== "bought").reduce((s, w) => s + (Number(w.estPrice) || 0), 0);
+  return `<section class="panel fin-report-panel"><header class="panel-head"><div><h2>报表</h2><p>一眼看清钱去哪了、固定开销多大、心愿攒得怎样</p></div></header>
+    <div class="fin-ov">
+      <div class="fin-ov-card"><span>本月已花</span><strong>${fmtMoney(expTotal)}</strong><small>${month}</small></div>
+      <div class="fin-ov-card"><span>月固定</span><strong>${fmtMoney(fixedTotal)}</strong><small>每月必花</small></div>
+      <div class="fin-ov-card"><span>心愿待购预算</span><strong>${fmtMoney(wishBudget)}</strong><small>${wishes.length} 个心愿 · 已购 ${boughtCount}</small></div>
+    </div>
+    <div class="fin-charts">
+      ${financeReportChart("本月开支构成", "本月", expSegs, expTotal, "本月还没有开支")}
+      ${financeReportChart("固定开支占比", "月固定", fixedSegs, fixedTotal, "还没有固定开支")}
+    </div>
+    ${financeWishesProgressMarkup(fin)}
+  </section>`;
+}
+
 function renderFinance() {
   const fin = (state && state.finance) || { fixed: [], expenses: [], wishes: [] };
   setHero("小狗钱钱", "把每一分钱，都养成会下金蛋的鹅。", "《小狗钱钱》式理财：先储蓄后消费，可视化愿望，记账看清漏洞。");
   $("#pageTitle").textContent = "小狗钱钱";
-  const tabs = [["guide", "使用说明"], ["fixed", "固定开支"], ["expenses", "本月开支"], ["wishes", "购物心愿单"]];
+  const tabs = [["guide", "使用说明"], ["report", "报表"], ["fixed", "固定开支"], ["expenses", "本月开支"], ["wishes", "购物心愿单"]];
   const tabBar = `<div class="fin-tabs">${tabs.map((t) => `<button type="button" class="fin-tab ${financeTab === t[0] ? "active" : ""}" data-fin-tab="${t[0]}">${t[1]}</button>`).join("")}</div>`;
   let body = "";
   if (financeTab === "guide") body = financeGuideMarkup();
+  else if (financeTab === "report") body = financeReportMarkup(fin);
   else if (financeTab === "fixed") body = financeFixedMarkup(fin);
   else if (financeTab === "expenses") body = financeExpensesMarkup(fin);
   else body = financeWishesMarkup(fin);
@@ -1704,7 +1801,8 @@ function finFields(collection, item) {
   }
   return `<label><span>想要的东西</span><input name="name" required maxlength="60" value="${esc(item.name || "")}" placeholder="如：新相机 / 显示器"></label>
     <div class="field-pair"><label><span>预估价格（¥）</span><input name="estPrice" type="number" min="0" step="0.01" value="${esc(item.estPrice != null ? item.estPrice : "")}" placeholder="0"></label>
-    <label><span>优先级</span><select name="priority"><option value="now" ${item.priority !== "longterm" ? "selected" : ""}>现在优先买</option><option value="longterm" ${item.priority === "longterm" ? "selected" : ""}>长期目标</option></select></label></div>
+    <label><span>已攒金额（¥）</span><input name="saved" type="number" min="0" step="0.01" value="${esc(item.saved != null ? item.saved : "")}" placeholder="0"></label></div>
+    <label><span>优先级</span><select name="priority"><option value="now" ${item.priority !== "longterm" ? "selected" : ""}>现在优先买</option><option value="longterm" ${item.priority === "longterm" ? "selected" : ""}>长期目标</option></select></label>
     <label><span>为什么想要（理由）</span><textarea name="reason" rows="2">${esc(item.reason || "")}</textarea></label>`;
 }
 
