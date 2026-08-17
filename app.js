@@ -610,6 +610,7 @@ function renderTrack(id) {
   const nextBlock = activeBlocks().filter((block) => block.goal === id && block.startAt).sort((left, right) => blockStart(left) - blockStart(right))[0];
   const visionCover = item.visionImage ? `<div class="track-cover"><img src="${esc(item.visionImage)}" alt="${esc(item.name)} 愿景图"></div>` : "";
   $("#viewContent").innerHTML = `<button type="button" class="back-link" data-view="tracks">← 返回 Tracks</button><div class="track-actions-row"><button type="button" class="oos-edit-track" data-edit-track="${esc(id)}">编辑轨道</button><button type="button" class="oos-edit-track danger" data-delete-track="${esc(id)}">删除轨道</button></div>${visionCover}<section class="track-hero archetype-${archetype}"><div><span class="eyebrow">${esc(item.role || archetype)} · ${esc(healthLabel[health.status] || health.status || "活跃")}</span><h2>${esc(item.name)}</h2><p>${esc(item.summary || item.nextAction || "下一步待补充。")}</p></div><aside class="track-summary-metrics"><div><span>当前阶段</span><strong>${esc(item.stage || "待补充")}</strong></div><div><span>下一动作</span><strong>${esc(shortText(item.nextAction || "待补充", 70))}</strong></div><div><span>下一日程</span><strong>${esc(nextBlock ? `${blockTime(nextBlock.startAt, true)} · ${nextBlock.title}` : "尚未排期")}</strong></div></aside></section>${special}<div class="two-col">${section("开放任务", `${tasks.length} 项仍在轨道上`, `<div class="task-list">${tasks.map((task) => taskCard(task, true)).join("") || emptyState("没有开放任务", "如果轨道仍然活跃，补一个最小下一步。")}</div>`)}${section("相关笔记", "用于快速恢复上下文", `<div class="note-list compact">${relatedNotes.slice(0, 6).map(noteRow).join("") || emptyState("暂无关联笔记", "只保存未来值得重新读到的内容。")}</div>`)}</div>`;
+  if (window.OOSRefs) $("#viewContent").insertAdjacentHTML("beforeend", OOSRefs.backlinksSection("track", id));
 }
 
 function trackViews(item) {
@@ -748,7 +749,7 @@ function noteRow(note) {
     <div class="memo-item-main">
       <div class="memo-item-head"><strong>${esc(shortText(firstLine || "未命名", 60))}</strong>${note.pinned ? `<i class="memo-pin" title="已置顶">📌</i>` : ""}</div>
       <span class="memo-date">${esc(date)}</span>
-      <p>${esc(shortText(preview || "暂无更多内容", 90))}</p>
+      <p>${window.OOSRefs ? OOSRefs.renderRefs(shortText(preview || "暂无更多内容", 90)) : esc(shortText(preview || "暂无更多内容", 90))}</p>
     </div>
     <div class="memo-item-actions">
       <button type="button" class="memo-act" data-note-pin="${esc(note.id)}">${note.pinned ? "取消置顶" : "置顶"}</button>
@@ -995,6 +996,7 @@ function renderNoteEditor(id) {
     <div class="memo-editor">
       <input id="noteTitleInput" class="memo-title-input" value="${esc(note.title || "")}" maxlength="120" placeholder="标题（可选，留空取首行）">
       <div id="noteBlocks" class="note-blocks">${note.blocks.map(blockRowMarkup).join("")}<button type="button" class="nb-add" data-block-add="${note.blocks.length - 1}">＋ 添加块（或输入“/”选类型）</button></div>
+      <div id="noteRefs" class="ref-panel"></div>
       <input id="noteTagsInput" class="memo-tags-input" value="${esc(Array.isArray(note.tags) ? note.tags.join(", ") : "")}" placeholder="标签（逗号分隔）">
       <div class="memo-editor-actions">
         <button type="button" class="memo-act" data-note-pin="${esc(note.id !== "note-new" ? note.id : "")}" ${note.id !== "note-new" ? "" : "disabled"}>${note.id !== "note-new" && note.pinned ? "取消置顶" : "置顶"}</button>
@@ -1003,6 +1005,7 @@ function renderNoteEditor(id) {
       </div>
     </div>`;
   wireNoteBlocks(note);
+  if (window.OOSRefs) window.OOSRefs.fillNoteRefs(note);
 }
 
 function renderReview() {
@@ -1660,7 +1663,7 @@ function financeWishesMarkup(fin) {
   const card = (x) => `<article class="fin-wish ${x.status === "bought" ? "bought" : ""}">
     <div class="fin-wish-top"><strong>${esc(x.name || "未命名")}</strong><span class="fin-wish-price">${fmtMoney(x.estPrice)}</span></div>
     ${x.estPrice ? `<div class="wish-bar"><div class="wish-bar-fill ${x.status === "bought" ? "done" : ""}" style="width:${wishPct(x)}%"></div></div><small class="wish-bar-cap">已攒 ${fmtMoney(x.saved || 0)} / ${fmtMoney(x.estPrice)} · ${wishPct(x)}%</small>` : ""}
-    ${x.reason ? `<p class="fin-wish-reason">${esc(x.reason)}</p>` : ""}
+    ${x.reason ? `<p class="fin-wish-reason">${esc(x.reason)}</p>` : ""}${window.OOSRefs ? OOSRefs.backlinksInline("wish", x.id) : ""}
     <div class="fin-wish-ops">
       <button type="button" class="fin-mini" data-wish-buy="${esc(x.id)}">${x.status === "bought" ? "取消已购" : "标记已购"}</button>
       <button type="button" class="fin-mini" data-fin-edit="wishes:${esc(x.id)}">编辑</button>
