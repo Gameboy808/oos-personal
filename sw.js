@@ -4,7 +4,7 @@
  * - 静态资源走 cache-first（离线也能开）
  * - CACHE_VERSION 变动即强制刷新缓存
  */
-const CACHE_VERSION = "oos-white-v25";
+const CACHE_VERSION = "oos-white-v26";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -19,6 +19,7 @@ const STATIC_ASSETS = [
   "./oos-client.js",
   "./oos-enhance.js",
   "./oos-modules.js",
+  "./oos-refs.js",
   "./oos-sync.js",
   "./favicon.svg",
   "./manifest.json"
