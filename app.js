@@ -594,6 +594,37 @@ function trackOverview(item, index) {
   return `<button type="button" class="track-card archetype-${archetypeOf(item)} status-${esc(status)}" data-track="${esc(item.id)}"><header><span>${String(index + 1).padStart(2, "0")} · ${esc(item.role || archetypeOf(item))}</span><i class="${esc(status)}"></i></header><h2>${esc(item.name)}</h2><p>${esc(shortText(item.summary || item.stage || "阶段待补充", 82))}</p><div class="track-next"><span>NEXT</span><strong>${esc(shortText(item.nextAction || "下一步待补充", 62))}</strong></div><div class="track-line"><i style="width:${progress}%"></i></div><footer><strong>${progress}%</strong><span>${esc(item.stage || "待补充")}</span><span>${health.unscheduled ? "未排期" : healthLabel[status] || status}</span></footer></button>`;
 }
 
+function taskIsDone(task) { return task.status === "done" || task.status === "completed"; }
+
+// Phase 3 · 关联汇总：轨道详情页聚合「挂在该轨道上的全部任务（含已完成）」的完成度
+function trackRollup(id) {
+  const all = list(state?.tasks).filter((t) => !t.archived && t.goal === id);
+  const total = all.length;
+  if (!total) return "";
+  const doneCount = all.filter(taskIsDone).length;
+  const pct = Math.round((doneCount / total) * 100);
+  const rows = all.slice().sort((a, b) => {
+    const da = taskIsDone(a) ? 1 : 0, db = taskIsDone(b) ? 1 : 0;
+    if (da !== db) return da - db; // 未完成在前，已完成沉底
+    return String(a.due || "9999").localeCompare(String(b.due || "9999"));
+  });
+  const listHtml = rows.map((t) => {
+    const done = taskIsDone(t);
+    const meta = t.priority === "high" ? "优先级高" : (t.due ? "到期 " + t.due : "未排期");
+    return `<button type="button" class="rollup-task ${done ? "is-done" : ""}" data-ref-task="${esc(t.id)}">
+      <span class="rollup-check ${done ? "on" : ""}">${done ? "✓" : ""}</span>
+      <span class="rollup-task-title">${esc(shortText(t.title, 64))}</span>
+      <span class="rollup-task-meta">${esc(meta)}</span>
+    </button>`;
+  }).join("");
+  const body = `<div class="rollup-summary">
+      <div class="rollup-figure"><strong>${doneCount}<small> / ${total}</small></strong><span class="rollup-pct">${pct}%</span></div>
+      <div class="rollup-bar"><div class="rollup-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="rollup-tasks">${listHtml}</div>`;
+  return section("关联任务汇总", `目标轨道上共 ${total} 个任务 · 已完成 ${doneCount}`, body, "archetype-panel rollup-panel");
+}
+
 function renderTrack(id) {
   const item = trackModel(track(id) || goal(id) || { id, name: id });
   const archetype = archetypeOf(item);
@@ -610,6 +641,8 @@ function renderTrack(id) {
   const nextBlock = activeBlocks().filter((block) => block.goal === id && block.startAt).sort((left, right) => blockStart(left) - blockStart(right))[0];
   const visionCover = item.visionImage ? `<div class="track-cover"><img src="${esc(item.visionImage)}" alt="${esc(item.name)} 愿景图"></div>` : "";
   $("#viewContent").innerHTML = `<button type="button" class="back-link" data-view="tracks">← 返回 Tracks</button><div class="track-actions-row"><button type="button" class="oos-edit-track" data-edit-track="${esc(id)}">编辑轨道</button><button type="button" class="oos-edit-track danger" data-delete-track="${esc(id)}">删除轨道</button></div>${visionCover}<section class="track-hero archetype-${archetype}"><div><span class="eyebrow">${esc(item.role || archetype)} · ${esc(healthLabel[health.status] || health.status || "活跃")}</span><h2>${esc(item.name)}</h2><p>${esc(item.summary || item.nextAction || "下一步待补充。")}</p></div><aside class="track-summary-metrics"><div><span>当前阶段</span><strong>${esc(item.stage || "待补充")}</strong></div><div><span>下一动作</span><strong>${esc(shortText(item.nextAction || "待补充", 70))}</strong></div><div><span>下一日程</span><strong>${esc(nextBlock ? `${blockTime(nextBlock.startAt, true)} · ${nextBlock.title}` : "尚未排期")}</strong></div></aside></section>${special}<div class="two-col">${section("开放任务", `${tasks.length} 项仍在轨道上`, `<div class="task-list">${tasks.map((task) => taskCard(task, true)).join("") || emptyState("没有开放任务", "如果轨道仍然活跃，补一个最小下一步。")}</div>`)}${section("相关笔记", "用于快速恢复上下文", `<div class="note-list compact">${relatedNotes.slice(0, 6).map(noteRow).join("") || emptyState("暂无关联笔记", "只保存未来值得重新读到的内容。")}</div>`)}</div>`;
+  const rollup = trackRollup(id);
+  if (rollup) $("#viewContent").insertAdjacentHTML("beforeend", rollup);
   if (window.OOSRefs) $("#viewContent").insertAdjacentHTML("beforeend", OOSRefs.backlinksSection("track", id));
 }
 
@@ -1281,6 +1314,8 @@ document.addEventListener("click", async (event) => {
   if (trackSortBtn) { const key = trackSortBtn.dataset.trackSort; if (tracksSort.key === key) tracksSort.dir *= -1; else { tracksSort.key = key; tracksSort.dir = 1; } render(); return; }
   const trackTarget = event.target.closest("[data-track]");
   if (trackTarget && !event.target.closest("select")) { view = "track"; selectedTrackId = trackTarget.dataset.track; closeOverlay(); window.scrollTo(0, 0); render(); return; }
+  const refTask = event.target.closest("[data-ref-task]");
+  if (refTask) { view = "today"; selectedTrackId = ""; closeOverlay(); window.scrollTo(0, 0); render(); return; }
   const editTrack = event.target.closest("[data-edit-track]");
   if (editTrack) { if (typeof window.openTrackEditor === "function") window.openTrackEditor(editTrack.dataset.editTrack); return; }
   const deleteTrack = event.target.closest("[data-delete-track]");
