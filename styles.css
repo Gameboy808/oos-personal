@@ -745,3 +745,20 @@ h1, h2, h3, p { margin-top: 0; }
 .ref-opt:hover, .ref-opt.active { background:var(--soft); }
 .ref-opt-kind { flex:0 0 auto; font-size:10px; font-weight:800; color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,#fff); border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line)); border-radius:6px; padding:2px 7px; }
 .ref-opt-label { flex:1; min-width:0; font-size:13px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ===== Phase 3 · 轨道关联汇总 Rollup (v27) ===== */
+.rollup-panel .rollup-summary { display:flex; align-items:center; gap:16px; padding:14px 16px 6px; }
+.rollup-figure { display:flex; align-items:baseline; gap:8px; flex:0 0 auto; }
+.rollup-figure strong { font-size:30px; line-height:1; color:var(--ink); font-variant-numeric:tabular-nums; }
+.rollup-figure strong small { font-size:14px; color:var(--muted); font-weight:600; }
+.rollup-pct { font-size:15px; font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums; }
+.rollup-bar { flex:1; min-width:120px; height:10px; border-radius:30px; background:var(--soft); overflow:hidden; }
+.rollup-bar-fill { height:100%; border-radius:30px; background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#34d399)); transition:width .4s ease; }
+.rollup-tasks { display:flex; flex-direction:column; gap:6px; padding:8px 16px 16px; }
+.rollup-task { display:flex; align-items:center; gap:10px; width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:11px; background:#fff; cursor:pointer; text-align:left; transition:border-color .15s ease, background .15s ease; }
+.rollup-task:hover { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 6%,#fff); }
+.rollup-check { flex:0 0 auto; width:18px; height:18px; border-radius:50%; border:1.5px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; }
+.rollup-check.on { background:var(--success); border-color:var(--success); }
+.rollup-task-title { flex:1; min-width:0; font-size:13px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rollup-task-meta { flex:0 0 auto; font-size:11px; color:var(--muted); }
+.rollup-task.is-done .rollup-task-title { color:var(--muted); text-decoration:line-through; }
